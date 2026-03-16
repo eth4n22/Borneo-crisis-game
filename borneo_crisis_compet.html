@@ -1,0 +1,2803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDT Decision: Borneo Crisis - Multiplayer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        /* Card styling */
+        .card {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .card h2 {
+            font-size: 1rem;
+            color: #00d4ff;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding-bottom: 8px;
+        }
+        
+        /* START SCREEN */
+        .start-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .start-screen .hero-art {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .start-screen h1 {
+            font-size: 2rem;
+            color: #00d4ff;
+            margin-bottom: 8px;
+        }
+        
+        .start-screen .subtitle {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+        
+        .start-screen .description {
+            max-width: 550px;
+            margin: 0 auto 25px;
+            color: #aaa;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+        
+        .player-select {
+            margin: 20px 0;
+        }
+        
+        .player-select label {
+            font-size: 1rem;
+            color: #fff;
+            margin-right: 12px;
+        }
+        
+        .player-select select {
+            padding: 8px 15px;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 2px solid #00d4ff;
+            background: #1a1a2e;
+            color: #fff;
+            cursor: pointer;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #1a1a2e;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,212,255,0.3);
+        }
+        
+        .btn-info {
+            background: transparent;
+            border: 2px solid #00d4ff;
+            color: #00d4ff;
+            margin-left: 10px;
+        }
+        
+        .btn-info:hover {
+            background: rgba(0,212,255,0.1);
+        }
+        
+        /* HOW TO PLAY SCREEN */
+        .howto-screen {
+            padding: 30px 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .howto-screen h2 {
+            font-size: 1.8rem;
+            color: #00d4ff;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .howto-section {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .howto-section h3 {
+            font-size: 1rem;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        
+        .howto-section p, .howto-section li {
+            font-size: 0.85rem;
+            color: #ccc;
+            line-height: 1.5;
+        }
+        
+        .howto-section ul {
+            margin-left: 20px;
+        }
+        
+        .howto-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        
+        .howto-table th, .howto-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .howto-table th {
+            color: #00d4ff;
+        }
+        
+        /* Action Guide Cards */
+        .action-guide-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        
+        .action-guide-header {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+        
+        .action-guide-header.ddt-action {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .action-guide-header.nothing-action {
+            background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+        }
+        
+        .action-guide-header.cats-action {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .action-guide-header.rat-action {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .action-icon {
+            font-size: 1.2rem;
+        }
+        
+        .action-name {
+            flex: 1;
+        }
+        
+        .action-cost {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        
+        .action-guide-body {
+            padding: 12px 15px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #ccc;
+        }
+        
+        .action-warning {
+            color: #ffa502;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+        
+        /* Feedback Loop Diagram */
+        .feedback-loop {
+            text-align: center;
+            background: rgba(255,71,87,0.1);
+            border: 1px solid rgba(255,71,87,0.3);
+        }
+        
+        .loop-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .loop-arrow {
+            padding: 5px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .loop-arrow.warning {
+            color: #ff4757;
+            font-weight: bold;
+        }
+        
+        /* Advanced Details Section */
+        .collapsible-section h3 {
+            margin: 0;
+            padding: 10px 0;
+        }
+        
+        .advanced-content {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .howto-subsection {
+            margin-bottom: 20px;
+        }
+        
+        .howto-subsection h4 {
+            color: #00d4ff;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+        
+        .score-formula {
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .score-formula p {
+            margin: 3px 0;
+        }
+        
+        .score-formula {
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .score-formula p {
+            margin: 3px 0;
+        }
+        
+        /* NAME SCREEN */
+        .name-screen {
+            padding: 30px 20px;
+        }
+        
+        .name-screen h2 {
+            font-size: 1.5rem;
+            color: #00d4ff;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .name-form {
+            max-width: 350px;
+            margin: 0 auto;
+        }
+        
+        .name-field {
+            margin-bottom: 15px;
+        }
+        
+        .name-field label {
+            display: block;
+            margin-bottom: 6px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .name-field input {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            border: 2px solid #333;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+        }
+        
+        .name-field input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        
+        .validation-msg {
+            color: #ff4757;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .validation-msg.show {
+            display: block;
+        }
+        
+        /* GAME LAYOUT - Two column grid */
+        .game-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+        
+        .game-header h1 {
+            font-size: 1.5rem;
+            color: #00d4ff;
+            margin-bottom: 8px;
+        }
+        
+        .player-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        
+        .player-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        .player-badge.current {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+        
+        .player-badge.finished {
+            background: #2ed573;
+            color: #1a1a2e;
+        }
+        
+        .player-badge.waiting {
+            background: #444;
+            color: #888;
+        }
+        
+        .score-so-far {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        
+        .round-indicator {
+            color: #ffd700;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        /* Global Event Banner */
+        .event-banner {
+            display: none;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            animation: bannerPulse 0.5s ease-out;
+        }
+        
+        .event-banner.active {
+            display: block;
+        }
+        
+        .event-banner.monsoon {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 2px solid #4facfe;
+        }
+        
+        .event-banner.rodent {
+            background: linear-gradient(135deg, #4a1c1c 0%, #8b4513 100%);
+            border: 2px solid #cd853f;
+        }
+        
+        .event-banner.scandal {
+            background: linear-gradient(135deg, #2d1b2d 0%, #800080 100%);
+            border: 2px solid #ff00ff;
+        }
+        
+        .event-banner.cleanup {
+            background: linear-gradient(135deg, #1a472a 0%, #2ed573 100%);
+            border: 2px solid #7bed9f;
+        }
+        
+        .event-banner.cat-disease {
+            background: linear-gradient(135deg, #3d1a1a 0%, #ff4757 100%);
+            border: 2px solid #ff6b81;
+        }
+        
+        .event-banner.funding {
+            background: linear-gradient(135deg, #1a3d1a 0%, #2ed573 100%);
+            border: 2px solid #7bed9f;
+        }
+        
+        .event-banner .event-title {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .event-banner .event-desc {
+            font-style: italic;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        @keyframes bannerPulse {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Health Meter */
+        .health-meter {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .health-meter .health-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+        }
+        
+        .health-meter .health-bar-container {
+            height: 14px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 7px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .health-meter .health-bar {
+            height: 100%;
+            border-radius: 7px;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+        
+        .health-meter .health-bar.green {
+            background: linear-gradient(90deg, #2ed573, #7bed9f);
+        }
+        
+        .health-meter .health-bar.yellow {
+            background: linear-gradient(90deg, #ffa502, #ffcc00);
+        }
+        
+        .health-meter .health-bar.red {
+            background: linear-gradient(90deg, #ff4757, #ff6b81);
+            animation: healthPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes healthPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .health-meter .health-value {
+            text-align: right;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            color: #888;
+        }
+        
+        /* Main game layout - 2 columns */
+        .game-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 850px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Left panel - Player Status */
+        .left-panel .card {
+            height: fit-content;
+        }
+        
+        .player-card {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .player-card.active {
+            border: 2px solid #00d4ff;
+            background: rgba(0,212,255,0.1);
+            box-shadow: 0 0 15px rgba(0,212,255,0.3);
+        }
+        
+        .player-card h3 {
+            font-size: 0.95rem;
+            margin: 0 0 8px 0;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .player-card .active-badge {
+            background: #00d4ff;
+            color: #1a1a2e;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .player-card .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 3px;
+        }
+        
+        .player-card .stat-label {
+            color: #888;
+        }
+        
+        .player-card .stat-value {
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        .player-card .health-mini {
+            margin-top: 8px;
+            font-size: 0.7rem;
+        }
+        
+        .player-card .health-mini-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 2px;
+            overflow: hidden;
+        }
+        
+        .player-card .health-mini-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        /* Scrollable sidebar */
+        #playersSidebar {
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        #playersSidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        #playersSidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        #playersSidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+        }
+        
+        /* Right panel - stacked cards */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        /* Stat rows */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.85rem;
+        }
+        
+        .stat-label {
+            color: #aaa;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .stat-value.danger { color: #ff4757; }
+        .stat-value.warning { color: #ffa502; }
+        .stat-value.success { color: #2ed573; }
+        
+        /* Key stats card - all ecological stats in one place */
+        .key-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .key-stats .stat-row {
+            border: none;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+        }
+        
+        /* Turn info section */
+        .turn-info {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0,212,255,0.1);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .turn-info .turn-num {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        
+        .turn-info .turn-desc {
+            color: #888;
+            font-size: 0.75rem;
+        }
+        
+        /* Action buttons - full width below */
+        .actions-card {
+            width: 100%;
+        }
+        
+        .budget-warning {
+            text-align: center;
+            padding: 8px;
+            background: rgba(255,71,87,0.2);
+            border: 1px solid rgba(255,71,87,0.5);
+            border-radius: 5px;
+            color: #ff4757;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        
+        @media (max-width: 600px) {
+            .action-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .action-btn {
+            padding: 10px 6px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(60%);
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Budget-disabled buttons get extra visual indicator */
+        .action-btn.budget-disabled {
+            opacity: 0.35 !important;
+            filter: grayscale(80%) brightness(0.7) !important;
+            border: 2px solid #ff0000 !important;
+            position: relative;
+        }
+        
+        .action-btn.budget-disabled::after {
+            content: '💸';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 14px;
+        }
+        
+        .action-btn.ddt { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .action-btn.nothing { background: linear-gradient(135deg, #636e72 0%, #2d3436 100%); color: white; }
+        .action-btn.cats { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        .action-btn.awareness { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+        
+        .action-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .action-btn .cost {
+            font-size: 0.65rem;
+            opacity: 0.85;
+            font-weight: normal;
+        }
+        
+        .advance-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%) !important;
+            color: #1a1a2e !important;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 14px !important;
+            border: 2px solid #ffd700;
+        }
+        
+        .advance-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* Event log */
+        .event-log {
+            max-height: 300px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .event-log h2 {
+            font-size: 0.95rem;
+            color: #00d4ff;
+            margin-bottom: 8px;
+        }
+        
+        .log-entry {
+            padding: 8px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.05);
+            border-left: 3px solid #00d4ff;
+            border-radius: 0 4px 4px 0;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .log-entry .turn { color: #00d4ff; font-weight: bold; }
+        .log-entry .action { color: #ffa502; }
+        .log-entry .deaths { color: #ff4757; }
+        .log-entry .effect { color: #2ed573; }
+        
+        /* Model notes - collapsible */
+        .model-notes h2 {
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .model-notes .notes-content {
+            display: block;
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 8px;
+        }
+        
+        .model-notes.collapsed .notes-content { display: none; }
+        
+        .notes-content .loop {
+            background: rgba(255,255,255,0.05);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 3px 0;
+            font-family: monospace;
+        }
+        
+        /* RESULTS SCREEN */
+        .results-screen {
+            padding: 15px;
+        }
+        
+        .results-screen h2 {
+            font-size: 1.5rem;
+            color: #00d4ff;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .winner-banner {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #1a1a2e;
+        }
+        
+        .winner-banner h3 {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
+        }
+        
+        .winner-banner .winner-name {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            font-size: 0.85rem;
+        }
+        
+        .results-table th,
+        .results-table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .results-table th {
+            background: rgba(0,212,255,0.2);
+            color: #00d4ff;
+            font-size: 0.75rem;
+        }
+        
+        .results-table .rank-col { font-weight: bold; color: #ffd700; }
+        .results-table .score-col { font-weight: bold; color: #00d4ff; }
+        
+        .chart-section {
+            margin-bottom: 15px;
+        }
+        
+        .chart-section h3 {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+        
+        .chart-section canvas {
+            max-height: 180px;
+        }
+        
+        .player-chart-select {
+            margin-bottom: 10px;
+        }
+        
+        .player-chart-select select {
+            padding: 6px 12px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: #1a1a2e;
+            color: #fff;
+            font-size: 0.8rem;
+        }
+        
+        .btn-compare {
+            padding: 6px 12px;
+            border-radius: 5px;
+            border: 1px solid #00d4ff;
+            background: transparent;
+            color: #00d4ff;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        
+        .btn-compare:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        
+        .btn-compare.active {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+        
+        .chart-container {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .export-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #2ed573 0%, #7bed9f 100%);
+            color: #1a1a2e;
+            margin: 0 8px;
+        }
+        
+        .btn-restart {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- START SCREEN -->
+        <div id="startScreen" class="screen start-screen active">
+            <div class="hero-art">🐱🪂🦟</div>
+            <h1>DDT Decision: Borneo Crisis</h1>
+            <p class="subtitle">Multiplayer Systems Policy Game</p>
+            <p class="description">
+                Turn-based simulation based on the Borneo DDT/cat drop story. 
+                Each player manages their own crisis for 12 turns. Make strategic decisions 
+                to control disease while managing ecological consequences.
+            </p>
+            <div class="player-select">
+                <label>Players:</label>
+                <select id="playerCount">
+                    <option value="2">2 Players</option>
+                    <option value="3">3 Players</option>
+                    <option value="4">4 Players</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="goToNameScreen()">Next</button>
+            
+            <button class="btn btn-info" onclick="showHowToPlay()">How to Play</button>
+        </div>
+        
+        <!-- HOW TO PLAY SCREEN -->
+        <div id="howToPlayScreen" class="screen howto-screen">
+            <h2>📖 How to Play</h2>
+            
+            <div style="text-align: center; margin-bottom: 15px;">
+                <a href="#" onclick="showScreen('startScreen'); return false;" style="color: #00d4ff; text-decoration: underline; font-size: 0.95rem; font-weight: bold;">← Back to Start</a>
+            </div>
+            
+            <!-- LAYER 1: SIMPLE PLAYER GUIDE -->
+            <div class="howto-section">
+                <h3>🎯 Objective</h3>
+                <p>Get the highest score (0-100) by controlling disease while keeping the ecosystem balanced. You have 12 turns — make them count!</p>
+            </div>
+            
+            <div class="howto-section">
+                <h3>🔄 How the Game Works</h3>
+                <ul>
+                    <li><strong>2–4 players</strong> take turns in round-robin style</li>
+                    <li>Each turn represents <strong>2 months</strong> (12 turns = 2 years total)</li>
+                    <li>Choose <strong>ONE action</strong> per turn</li>
+                    <li>Your decisions affect disease, animals, trust, and budget</li>
+                </ul>
+            </div>
+            
+            <div class="howto-section">
+                <h3>🎮 Your Four Actions</h3>
+                
+                <div class="action-guide-card">
+                    <div class="action-guide-header ddt-action">
+                        <span class="action-icon">💧</span>
+                        <span class="action-name">A) Spray DDT</span>
+                        <span class="action-cost">Cost: 12</span>
+                    </div>
+                    <div class="action-guide-body">
+                        <p><strong>Kills mosquitoes quickly</strong> and reduces malaria. But beware — it also harms cats, which can cause rats to multiply and spread more disease later.</p>
+                        <p class="action-warning">⚠️ Effects are delayed by 2 turns</p>
+                    </div>
+                </div>
+                
+                <div class="action-guide-card">
+                    <div class="action-guide-header nothing-action">
+                        <span class="action-icon">⏸️</span>
+                        <span class="action-name">B) Do Nothing</span>
+                        <span class="action-cost">Cost: Free</span>
+                    </div>
+                    <div class="action-guide-body">
+                        <p>Saves your budget, but mosquitoes will breed and disease may spread. Your trust with the community also drops slightly.</p>
+                    </div>
+                </div>
+                
+                <div class="action-guide-card">
+                    <div class="action-guide-header cats-action">
+                        <span class="action-icon">🐱</span>
+                        <span class="action-name">C) Cat Drop</span>
+                        <span class="action-cost">Cost: 15</span>
+                    </div>
+                    <div class="action-guide-body">
+                        <p><strong>Restores cat populations</strong> to hunt rats. More cats = fewer rats = less disease. But it's expensive!</p>
+                        <p class="action-warning">⚠️ Effects are delayed by 1 turn</p>
+                    </div>
+                </div>
+                
+                <div class="action-guide-card">
+                    <div class="action-guide-header rat-action">
+                        <span class="action-icon">🐀</span>
+                        <span class="action-name">D) Rat Campaign</span>
+                        <span class="action-cost">Cost: 10</span>
+                    </div>
+                    <div class="action-guide-body">
+                        <p><strong>Quickly reduces rat population</strong> and disease. However, it may accidentally harm some cats too.</p>
+                        <p class="action-warning">⚠️ Effects are delayed by 1 turn</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="howto-section">
+                <h3>⚠️ What to Watch Out For</h3>
+                <ul>
+                    <li><strong>Delayed Effects:</strong> Actions don't work immediately. DDT takes 2 turns to show ecological impact.</li>
+                    <li><strong>Balance is Key:</strong> Overusing one action creates problems. DDT kills cats → rats explode → disease surges!</li>
+                    <li><strong>Trust Matters:</strong> If trust drops below 25, your actions become 30% less effective.</li>
+                    <li><strong>Budget Limits:</strong> If budget goes negative, you can't afford paid actions until you recover to 10+.</li>
+                    <li><strong>Eco Collapse:</strong> If cats drop below 20 AND rats exceed 80, it's ecological collapse — major score penalty!</li>
+                </ul>
+            </div>
+            
+            <div class="howto-section">
+                <h3>🏆 Winning Tips</h3>
+                <ul>
+                    <li><strong>Lower deaths</strong> — biggest factor in your score</li>
+                    <li><strong>Keep disease under control</strong> — don't let infections peak</li>
+                    <li><strong>Avoid ecological collapse</strong> — maintain cat/rat balance</li>
+                    <li><strong>Preserve trust and budget</strong> — they give bonus points</li>
+                    <li><strong>Think ahead</strong> — remember delayed effects!</li>
+                </ul>
+            </div>
+            
+            <!-- Visual Feedback Loop Diagram -->
+            <div class="howto-section feedback-loop">
+                <h3>🔄 The Core Problem (Why It's Hard)</h3>
+                <p style="text-align: center; margin-bottom: 15px;">The classic dilemma:</p>
+                <div class="loop-diagram">
+                    <div class="loop-arrow">DDT ↑</div>
+                    <div class="loop-arrow">↓</div>
+                    <div class="loop-arrow">Cats ↓</div>
+                    <div class="loop-arrow">↓</div>
+                    <div class="loop-arrow">Rats ↑↑</div>
+                    <div class="loop-arrow">↓</div>
+                    <div class="loop-arrow warning">Disease ↑↑</div>
+                </div>
+                <p style="text-align: center; margin-top: 15px; color: #aaa;"><em>Using DDT to fight malaria accidentally causes more disease!</em></p>
+            </div>
+            
+            <!-- LAYER 2: ADVANCED DETAILS (Collapsible) -->
+            <div class="howto-section collapsible-section">
+                <h3 onclick="toggleAdvancedDetails()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📊 Advanced Rules & Exact Values</span>
+                    <span id="advancedToggleIcon" style="font-size: 1.2rem;">▼</span>
+                </h3>
+                <div id="advancedDetails" class="advanced-content" style="display: none;">
+                    
+                    <div class="howto-subsection">
+                        <h4>🎯 Scoring Formula</h4>
+                        <div class="score-formula">
+                            <p><strong>Score = 100</strong></p>
+                            <p>− Deaths penalty: deaths × 0.6 (max −60)</p>
+                            <p>− Peak penalty: peak_infection × 0.1 (max −20)</p>
+                            <p>− Duration penalty: outbreak_turns × 1.5 (max −15)</p>
+                            <p>− Eco penalty: eco_collapse × 5 (max −20)</p>
+                            <p>+ Trust bonus: floor(trust/10) (max +10)</p>
+                            <p>+ Budget bonus: floor(budget/20) (max +5)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="howto-subsection">
+                        <h4>📋 Exact Action Values</h4>
+                        <table class="howto-table">
+                            <tr><th>Action</th><th>Cost</th><th>Exact Effects</th></tr>
+                            <tr><td>Spray DDT</td><td>12</td><td>Mosquitoes −18, DDT +20, Trust +2</td></tr>
+                            <tr><td>Do Nothing</td><td>0</td><td>Mosquitoes +5, Trust −3</td></tr>
+                            <tr><td>Cat Drop</td><td>15</td><td>Cats +18 (or +9 if cats &gt;85), Rats −10</td></tr>
+                            <tr><td>Rat Campaign</td><td>10</td><td>Rats −16 (or −6 if rats &lt;20), Cats −3</td></tr>
+                        </table>
+                    </div>
+                    
+                    <div class="howto-subsection">
+                        <h4>⚡ Random Events</h4>
+                        <table class="howto-table">
+                            <tr><th>Event</th><th>Chance</th><th>Effects</th></tr>
+                            <tr><td>🌧️ Monsoon</td><td>10%</td><td>Mosquitoes +15, Malaria +5, Trust −2</td></tr>
+                            <tr><td>🐀 Rodent Migration</td><td>6%</td><td>Rats +20, Rat Disease +5, Cats −3</td></tr>
+                            <tr><td>📰 DDT Scandal</td><td>5%</td><td>Trust −10 (if DDT&gt;40), else −4</td></tr>
+                            <tr><td>🧹 Clean-Up</td><td>5%</td><td>Rats −10, Rat Disease −5, Trust +6</td></tr>
+                            <tr><td>🐱 Cat Disease</td><td>4%</td><td>Cats −15, Rats +8, Trust −3</td></tr>
+                            <tr><td>🏥 WHO Funding</td><td>~4%</td><td>Budget +25, Trust +3 (guaranteed once)</td></tr>
+                        </table>
+                    </div>
+                    
+                    <div class="howto-subsection">
+                        <h4>🔧 Technical Details</h4>
+                        <ul>
+                            <li><strong>Trust Threshold:</strong> Below 25 = 70% action effectiveness</li>
+                            <li><strong>Budget Threshold:</strong> Below 0 = actions disabled until ≥10</li>
+                            <li><strong>DDT Fatigue:</strong> Using DDT 3× in a row = −8 trust</li>
+                            <li><strong>Eco Collapse:</strong> Cats &lt; 20 AND Rats &gt; 80</li>
+                            <li><strong>Delay Times:</strong> DDT harm = 2 turns, Cat/Rat = 1 turn</li>
+                        </ul>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <script>
+                function toggleAdvancedDetails() {
+                    var content = document.getElementById('advancedDetails');
+                    var icon = document.getElementById('advancedToggleIcon');
+                    if (content.style.display === 'none') {
+                        content.style.display = 'block';
+                        icon.textContent = '▲';
+                    } else {
+                        content.style.display = 'none';
+                        icon.textContent = '▼';
+                    }
+                }
+            </script>
+        </div>
+        
+        <!-- NAME SCREEN -->
+        <div id="nameScreen" class="screen name-screen">
+            <h2>Enter Player Names</h2>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <a href="#" onclick="showScreen('startScreen'); return false;" style="color: #00d4ff; text-decoration: underline; font-size: 0.95rem; font-weight: bold;">← Back to Start</a>
+            </div>
+            <div class="name-form">
+                <div id="nameFields"></div>
+                <div id="validationMsg" class="validation-msg">Names must be unique and non-empty</div>
+                <button class="btn btn-primary" onclick="startGame()">Start Game</button>
+            </div>
+        </div>
+        
+        <!-- GAME SCREEN -->
+        <div id="gameScreen" class="screen">
+            <!-- Header -->
+            <div class="game-header">
+                <h1>DDT Decision: Borneo Crisis</h1>
+                <div class="player-indicator" id="playerIndicator"></div>
+                <div class="score-so-far" id="scoreSoFar"></div>
+                <div class="round-indicator" id="roundIndicator">Round 1</div>
+            </div>
+            
+            <!-- Global Event Banner -->
+            <div id="eventBanner" class="event-banner">
+                <div class="event-title" id="eventTitle"></div>
+                <div class="event-desc" id="eventDesc"></div>
+            </div>
+            
+            <!-- Two-column layout -->
+            <div class="game-layout">
+                <!-- LEFT PANEL: Player Status + Current Player Info -->
+                <div class="left-panel" id="playersSidebar">
+                    <!-- Player cards will be rendered here by JS -->
+                    
+                    <!-- Current Player Stats (static, updated by JS) -->
+                    <div class="card">
+                        <h2>👤 Current Player</h2>
+                        <div class="stat-row">
+                            <span class="stat-label">Name:</span>
+                            <span class="stat-value" id="currentPlayerName">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Turn:</span>
+                            <span class="stat-value" id="turnDisplay">1 / 12</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Budget:</span>
+                            <span class="stat-value" id="budgetDisplay">100</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Deaths:</span>
+                            <span class="stat-value" id="deathsCumulativeDisplay">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Deaths/Turn:</span>
+                            <span class="stat-value" id="deathsThisTurnDisplay">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Trust:</span>
+                            <span class="stat-value" id="publicTrustDisplay">70</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- RIGHT PANEL: Key Stats + Actions + Log -->
+                <div class="right-panel">
+                    <!-- Key Stats Card -->
+                    <div class="card">
+                        <h2>🔬 Key Stats</h2>
+                        <div class="key-stats">
+                            <div class="stat-row">
+                                <span class="stat-label">Mosquitoes:</span>
+                                <span class="stat-value" id="mosquitoesDisplay">70</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">DDT Level:</span>
+                                <span class="stat-value" id="ddtDisplay">0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Cats:</span>
+                                <span class="stat-value success" id="catsDisplay">60</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Rats:</span>
+                                <span class="stat-value warning" id="ratsDisplay">20</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Malaria:</span>
+                                <span class="stat-value danger" id="malariaDisplay">50</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Rat Disease:</span>
+                                <span class="stat-value danger" id="ratDiseaseDisplay">10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Health Meter -->
+                    <div class="card">
+                        <h2>❤️ Health Status</h2>
+                        <div class="health-meter">
+                            <div class="health-label">
+                                <span id="healthPercent">100%</span>
+                                <span id="healthValue">Healthy</span>
+                            </div>
+                            <div class="health-bar-container">
+                                <div class="health-bar green" id="healthBar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Policy Actions -->
+                    <div class="card actions-card">
+                        <h2>🎯 Policy Actions</h2>
+                        <div class="turn-info">
+                            <div class="turn-num" id="turnNumberDisplay">Turn 1</div>
+                            <div class="turn-desc">2 months per turn | Total 24 months</div>
+                        </div>
+                        
+                        <div id="budgetWarning" class="budget-warning" style="display: none;">
+                            ⚠️ Budget depleted! Actions disabled.
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="action-btn cats" onclick="applyAction('cats')">
+                                A) Cat Drop
+                                <span class="cost">Cost: 15</span>
+                            </button>
+                            <button class="action-btn ddt" onclick="applyAction('ddt')">
+                                B) Spray DDT
+                                <span class="cost">Cost: 12</span>
+                            </button>
+                            <button class="action-btn awareness" onclick="applyAction('awareness')">
+                                C) Awareness Campaign
+                                <span class="cost">Cost: 10</span>
+                            </button>
+                            <button class="action-btn nothing" onclick="applyAction('nothing')">
+                                D) Do Nothing
+                                <span class="cost">Cost: Free</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Manual Advance Button -->
+                        <div id="advanceButtonContainer" style="display:none; margin-top:15px;">
+                            <button id="advanceBtn" class="action-btn advance-btn" onclick="advanceTurnFlow()">
+                                Next Player
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Event Log -->
+                    <div class="card event-log">
+                        <h2>📋 Event Log</h2>
+                        <div id="logContainer">
+                            <div class="log-entry">
+                                <span class="turn">Turn 1:</span> Choose your first policy action.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RESULTS SCREEN -->
+        <div id="resultsScreen" class="screen results-screen">
+            <h2>🏁 Game Complete!</h2>
+            <div id="winnerBanner" class="winner-banner" style="display: none;">
+                <h3>Winner</h3>
+                <div class="winner-name" id="winnerName"></div>
+            </div>
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Score</th>
+                        <th>Deaths</th>
+                        <th>Peak Inf.</th>
+                        <th>Outbreak</th>
+                        <th>Eco</th>
+                        <th>Trust</th>
+                        <th>Budget</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+            
+            <div class="chart-section">
+                <h3>📈 Disease Levels</h3>
+                <div class="player-chart-select">
+                    <select id="diseasePlayerSelect" onchange="updateDiseaseChart()"></select>
+                    <button class="btn-compare" onclick="toggleCompareDisease()">Compare All Players</button>
+                </div>
+                <canvas id="diseaseChart"></canvas>
+            </div>
+            
+            <div class="chart-section">
+                <h3>📈 Cat & Rat Populations</h3>
+                <div class="player-chart-select">
+                    <select id="populationPlayerSelect" onchange="updatePopulationChart()"></select>
+                    <button class="btn-compare" onclick="toggleComparePopulation()">Compare All Players</button>
+                </div>
+                <canvas id="populationChart"></canvas>
+            </div>
+            
+            <div class="chart-section">
+                <h3>📈 Deaths Over Time</h3>
+                <div class="player-chart-select">
+                    <select id="deathsPlayerSelect" onchange="updateDeathsChart()"></select>
+                    <button class="btn-compare" onclick="toggleCompareDeaths()">Compare All Players</button>
+                </div>
+                <canvas id="deathsChart"></canvas>
+            </div>
+            
+            <div class="export-section">
+                <button class="btn btn-export" onclick="exportAllCSV()">📥 Export CSV</button>
+                <button class="btn btn-restart" onclick="restartGame()">🔄 Play Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ==================== PLAYER CLASS ====================
+        class Player {
+            constructor(name, id) {
+                this.name = name;
+                this.id = id;
+                this.turn = 1;
+                this.mosquitoes = 70;
+                this.ddt = 0;
+                this.cats = 60;
+                this.rats = 20;
+                this.malaria_infected = 50;
+                this.rat_disease_infected = 10;
+                this.deaths_cumulative = 0;
+                this.deaths_this_turn = 0;
+                this.public_trust = 70;
+                this.budget = 100;
+                
+                // Delay queues
+                this.deaths_queue = [0, 0];
+                this.ddt_ecology_queue = [0, 0];
+                this.cat_drop_queue = [0];
+                this.rat_control_queue = [0];
+                this.awareness_queue = [0]; // For awareness campaign delayed effects
+                
+                // Action tracking
+                this.consecutive_ddt_uses = 0;
+                this.total_cat_drops = 0;
+                this.actions_disabled = false;
+                
+                // Data logging
+                this.dataLog = {
+                    turn: [], mosquitoes: [], ddt: [], cats: [], rats: [],
+                    malaria_infected: [], rat_disease_infected: [],
+                    deaths_this_turn: [], deaths_cumulative: [],
+                    public_trust: [], budget: []
+                };
+                
+                this.actionHistory = [];
+                this.recordTurn();
+            }
+            
+            recordTurn() {
+                this.dataLog.turn.push(this.turn);
+                this.dataLog.mosquitoes.push(this.mosquitoes);
+                this.dataLog.ddt.push(this.ddt);
+                this.dataLog.cats.push(this.cats);
+                this.dataLog.rats.push(this.rats);
+                this.dataLog.malaria_infected.push(this.malaria_infected);
+                this.dataLog.rat_disease_infected.push(this.rat_disease_infected);
+                this.dataLog.deaths_this_turn.push(this.deaths_this_turn);
+                this.dataLog.deaths_cumulative.push(this.deaths_cumulative);
+                this.dataLog.public_trust.push(this.public_trust);
+                this.dataLog.budget.push(this.budget);
+            }
+            
+            clamp() {
+                // Don't clamp populations - allow realistic growth
+                // Only clamp rates/percentages to 0-100
+                this.mosquitoes = Math.max(0, this.mosquitoes);
+                this.ddt = Math.max(0, Math.min(100, this.ddt));
+                this.cats = Math.max(0, this.cats);
+                this.rats = Math.max(0, this.rats);
+                this.malaria_infected = Math.max(0, Math.min(100, this.malaria_infected));
+                this.rat_disease_infected = Math.max(0, Math.min(100, this.rat_disease_infected));
+                this.public_trust = Math.max(0, Math.min(100, this.public_trust));
+                this.budget = Math.max(0, this.budget);
+            }
+            
+            applyNaturalDynamics() {
+                this.mosquitoes += Math.round((60 - this.mosquitoes) * 0.10);
+                this.ddt = Math.max(0, this.ddt - 8);
+                this.cats += 1 - Math.floor(this.rats / 25);
+                this.rats += 4 + Math.floor((50 - this.cats) / 20);
+                this.malaria_infected += Math.floor((this.mosquitoes - this.malaria_infected) * 0.25);
+                this.rat_disease_infected += Math.floor((this.rats - this.rat_disease_infected) * 0.20);
+            }
+            
+            applyDelayedEffects(effectsLog) {
+                let ecology_hit = this.ddt_ecology_queue.shift() || 0;
+                if (ecology_hit > 0) {
+                    this.cats -= ecology_hit;
+                    this.rats += Math.floor(ecology_hit / 2);
+                    effectsLog.push(`DDT harm: Cats -${ecology_hit}, Rats +${Math.floor(ecology_hit/2)}`);
+                }
+                
+                let cat_increase = this.cat_drop_queue.shift() || 0;
+                if (cat_increase > 0) {
+                    let actual = Math.floor(cat_increase * (this.public_trust < 25 ? 0.7 : 1.0));
+                    this.cats += actual;
+                    this.rats -= 10;
+                    effectsLog.push(`Cat drop: Cats +${actual}, Rats -10`);
+                }
+                
+                let rat_reduction = this.rat_control_queue.shift() || 0;
+                if (rat_reduction > 0) {
+                    let actual = Math.floor(rat_reduction * (this.public_trust < 25 ? 0.7 : 1.0));
+                    this.rats -= actual;
+                    this.cats -= 3;
+                    this.public_trust -= 2;
+                    effectsLog.push(`Rat control: Rats -${actual}, Cats -3, Trust -2`);
+                }
+                
+                // Handle awareness campaign delayed effects
+                let awareness_reduction = this.awareness_queue.shift() || 0;
+                if (awareness_reduction > 0) {
+                    let actual = Math.floor(awareness_reduction * (this.public_trust < 25 ? 0.7 : 1.0));
+                    this.mosquitoes -= actual;
+                    this.rats -= actual;
+                    effectsLog.push(`Awareness delayed: Mosquitoes -${actual}, Rats -${actual}`);
+                }
+            }
+            
+            computeDeaths() {
+                let immediate = Math.floor(this.malaria_infected * 0.10) + Math.floor(this.rat_disease_infected * 0.12);
+                this.deaths_queue.push(immediate);
+                this.deaths_this_turn = this.deaths_queue.shift() || 0;
+                this.deaths_cumulative += this.deaths_this_turn;
+            }
+            
+            applyAction(action, effectsLog) {
+                let compliance = this.public_trust < 25 ? 0.7 : 1.0;
+                
+                switch(action) {
+                    case 'ddt':
+                        let costDdt = 12;
+                        this.budget -= costDdt; // Allow going negative
+                        let mosqRed = Math.floor(18 * compliance);
+                        this.mosquitoes -= mosqRed;
+                        this.ddt += 20;
+                        this.public_trust += 2;
+                        this.consecutive_ddt_uses++;
+                        let ecology = Math.floor(this.ddt / 12) + 3;
+                        this.ddt_ecology_queue.push(ecology);
+                        effectsLog.push(`Mosq -${mosqRed}, DDT +20`);
+                        if (this.consecutive_ddt_uses >= 3) {
+                            this.public_trust -= 8;
+                            effectsLog.push(`DDT fatigue: Trust -8`);
+                        }
+                        break;
+                    case 'nothing':
+                        this.public_trust -= 3;
+                        this.mosquitoes += 5;
+                        this.consecutive_ddt_uses = 0;
+                        effectsLog.push('Trust -3, Mosq +5');
+                        break;
+                    case 'cats':
+                        let cost = 15;
+                        this.budget -= cost; // Allow going negative
+                        this.total_cat_drops++;
+                        this.public_trust += 1;
+                        this.consecutive_ddt_uses = 0;
+                        let increase = this.cats > 85 ? 9 : 18;
+                        this.cat_drop_queue.push(increase);
+                        effectsLog.push(`Cat drop: +${increase} (cost ${cost})`);
+                        break;
+                    case 'awareness':
+                        this.budget -= 10; // Allow going negative
+                        this.public_trust += 8;
+                        this.malaria_infected = Math.max(0, this.malaria_infected - 3);
+                        this.rat_disease_infected = Math.max(0, this.rat_disease_infected - 3);
+                        this.consecutive_ddt_uses = 0;
+                        // Delayed effect after 1 turn: mosquitoes -= 4, rats -= 4
+                        this.awareness_queue.push(4);
+                        effectsLog.push(`Awareness campaign: Trust +8, Disease -3 immediate, -4 delayed`);
+                        break;
+                }
+                
+                this.actionHistory.push({ turn: this.turn, action: action, effects: [...effectsLog] });
+            }
+            
+            updateTrust() {
+                if (this.deaths_this_turn >= 5) {
+                    this.public_trust -= Math.floor(this.deaths_this_turn / 3);
+                } else if (this.deaths_this_turn < 5) {
+                    this.public_trust += 2;
+                }
+                // Note: Budget is now prevented from going negative in applyAction
+                // No need for actions_disabled logic anymore
+            }
+            
+            isFinished() {
+                return this.turn > 12;
+            }
+            
+            calculateScore() {
+                let total_deaths = this.deaths_cumulative;
+                let peak_infection = 0;
+                for (let i = 0; i < this.dataLog.malaria_infected.length; i++) {
+                    let sum = this.dataLog.malaria_infected[i] + this.dataLog.rat_disease_infected[i];
+                    if (sum > peak_infection) peak_infection = sum;
+                }
+                
+                let outbreak_duration = 0;
+                for (let i = 0; i < this.dataLog.malaria_infected.length; i++) {
+                    if (this.dataLog.malaria_infected[i] + this.dataLog.rat_disease_infected[i] > 60) {
+                        outbreak_duration++;
+                    }
+                }
+                
+                let eco_events = 0;
+                for (let i = 0; i < this.dataLog.cats.length; i++) {
+                    if (this.dataLog.cats[i] < 20 && this.dataLog.rats[i] > 80) {
+                        eco_events++;
+                    }
+                }
+                
+                let final_trust = this.dataLog.public_trust[this.dataLog.public_trust.length - 1];
+                let final_budget = this.dataLog.budget[this.dataLog.budget.length - 1];
+                
+                let deaths_penalty = Math.min(60, total_deaths * 0.6);
+                let peak_penalty = Math.min(20, peak_infection * 0.1);
+                let duration_penalty = Math.min(15, outbreak_duration * 1.5);
+                let eco_penalty = Math.min(20, eco_events * 5);
+                let trust_bonus = Math.min(10, Math.floor(final_trust / 10));
+                let budget_bonus = Math.min(5, Math.floor(final_budget / 20));
+                
+                let score = Math.max(0, Math.min(100,
+                    100 - deaths_penalty - peak_penalty - duration_penalty - eco_penalty + trust_bonus + budget_bonus
+                ));
+                
+                return {
+                    score: Math.round(score),
+                    total_deaths: total_deaths,
+                    peak_infection: peak_infection,
+                    outbreak_duration: outbreak_duration,
+                    eco_events: eco_events,
+                    final_trust: final_trust,
+                    final_budget: final_budget
+                };
+            }
+        }
+        
+        // ==================== GAME STATE ====================
+        let players = [];
+        let currentPlayerIndex = 0;
+        let numPlayers = 2;
+        let currentRound = 1;
+        let lastPlayerIndexAtRoundEnd = -1;
+        let diseaseChart = null, populationChart = null, deathsChart = null;
+        let globalMaxDeaths = 50; // For consistent Y-axis across all players
+        // Compare all players mode flags
+        let compareDisease = false;
+        let comparePopulation = false;
+        let compareDeaths = false;
+        let roundEvents = []; // Track global events per round: { round: number, event: string }
+        let fundingRound = -1; // Which round gets guaranteed funding (7, 8, or 9)
+        
+        // Manual advance state
+        let pendingAdvance = false;
+        let pendingAdvanceType = null; // 'nextPlayer', 'globalEvent', 'endGame'
+        let pendingNextPlayerIndex = null;
+        let pendingWasLastPlayerInRound = false;
+        
+        // ==================== GLOBAL EVENT SYSTEM ====================
+        // Triggered after all players complete one full rotation
+        function triggerGlobalEvent() {
+            // Check for guaranteed WHO Funding on specific round
+            if (currentRound === fundingRound) {
+                fundingRound = -1; // Mark as used
+                // Apply funding event
+                let eventTitle = '🏥 Emergency WHO Funding!';
+                let eventDesc = 'International organization sends emergency medical supplies and funding.';
+                let effectsText = 'Budget +25, Trust +3';
+                
+                players.forEach(p => {
+                    p.budget += 25; // Unbounded
+                    p.public_trust = Math.min(100, p.public_trust + 3);
+                });
+                
+                // Track event
+                roundEvents.push({ round: currentRound, event: '[Funding]' });
+                showEventBanner('funding', eventTitle, eventDesc, effectsText);
+                logGlobalEvent(eventTitle, eventDesc, effectsText);
+                return; // Funding event takes priority
+            }
+            
+            // 30% chance of random event (no funding)
+            let roll = Math.random();
+            if (roll > 0.30) return; // 70% no event
+            
+            // 30% total - pick one of 5 events (excluding funding)
+            let eventRoll = Math.random();
+            let eventType = '';
+            let eventTitle = '';
+            let eventDesc = '';
+            let effectsText = '';
+            
+            if (eventRoll < 0.10) { // 10%
+                eventType = 'monsoon';
+                eventTitle = '🌧️ Monsoon Season!';
+                eventDesc = 'Heavy rains bring flooding and ideal mosquito breeding conditions.';
+                effectsText = 'Mosquitoes +15, Malaria +5, Trust -2';
+                // Apply to all players
+                players.forEach(p => {
+                    p.mosquitoes = Math.min(100, p.mosquitoes + 15);
+                    p.malaria_infected = Math.min(100, p.malaria_infected + 5);
+                    p.public_trust = Math.max(0, p.public_trust - 2);
+                });
+            } else if (eventRoll < 0.16) { // 6%
+                eventType = 'rodent';
+                eventTitle = '🐀 Rodent Migration!';
+                eventDesc = 'A massive wave of rats migrates from the forests into villages.';
+                effectsText = 'Rats +20, Rat Disease +5, Cats -3';
+                players.forEach(p => {
+                    p.rats = Math.min(100, p.rats + 20);
+                    p.rat_disease_infected = Math.min(100, p.rat_disease_infected + 5);
+                    p.cats = Math.max(0, p.cats - 3);
+                });
+            } else if (eventRoll < 0.21) { // 5%
+                eventType = 'scandal';
+                eventTitle = '📰 DDT Contamination Scandal!';
+                eventDesc = 'News breaks about DDT toxicity in local water supplies.';
+                effectsText = 'Trust -10 (if DDT>40), else -4';
+                players.forEach(p => {
+                    if (p.ddt > 40) {
+                        p.public_trust = Math.max(0, p.public_trust - 10);
+                    } else {
+                        p.public_trust = Math.max(0, p.public_trust - 4);
+                    }
+                });
+            } else if (eventRoll < 0.26) { // 5%
+                eventType = 'cleanup';
+                eventTitle = '🧹 Community Clean-Up Initiative!';
+                eventDesc = 'Villagers organize a massive sanitation and garbage removal effort.';
+                effectsText = 'Rats -10, Rat Disease -5, Trust +6';
+                players.forEach(p => {
+                    p.rats = Math.max(0, p.rats - 10);
+                    p.rat_disease_infected = Math.max(0, p.rat_disease_infected - 5);
+                    p.public_trust = Math.min(100, p.public_trust + 6);
+                });
+            } else { // 4% - Cat Disease (removed funding from random pool)
+                eventType = 'cat-disease';
+                eventTitle = '🐱 Cat Disease Outbreak!';
+                eventDesc = 'A mysterious illness spreads through the feral cat population.';
+                effectsText = 'Cats -15, Rats +8, Trust -3';
+                players.forEach(p => {
+                    p.cats = Math.max(0, p.cats - 15);
+                    p.rats = Math.min(100, p.rats + 8);
+                    p.public_trust = Math.max(0, p.public_trust - 3);
+                });
+            }
+            
+            // Clamp all values
+            players.forEach(p => p.clamp());
+            
+            // Track event for this round (for chart labels)
+            let eventTag = '';
+            if (eventType === 'monsoon') eventTag = '[Monsoon]';
+            else if (eventType === 'rodent') eventTag = '[Migration]';
+            else if (eventType === 'scandal') eventTag = '[Scandal]';
+            else if (eventType === 'cleanup') eventTag = '[CleanUp]';
+            else if (eventType === 'cat-disease') eventTag = '[CatDisease]';
+            else if (eventType === 'funding') eventTag = '[Funding]';
+            roundEvents.push({ round: currentRound, event: eventTag });
+            
+            // Show event banner with effects
+            showEventBanner(eventType, eventTitle, eventDesc, effectsText);
+            
+            // Log global event
+            logGlobalEvent(eventTitle, eventDesc, effectsText);
+        }
+        
+        function showEventBanner(type, title, desc, effects) {
+            let banner = document.getElementById('eventBanner');
+            banner.className = 'event-banner active ' + type;
+            document.getElementById('eventTitle').textContent = title;
+            document.getElementById('eventDesc').innerHTML = desc + '<br><strong>Effects:</strong> ' + effects;
+            
+            // Banner stays until next player takes their turn (no auto-hide)
+        }
+        
+        function logGlobalEvent(title, desc, effects) {
+            let container = document.getElementById('logContainer');
+            let entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.style.borderLeftColor = '#ffd700';
+            entry.style.background = 'rgba(255,215,0,0.1)';
+            entry.innerHTML = `<span style="color:#ffd700;font-weight:bold">🌍 GLOBAL: ${title}</span><br><span style="color:#aaa;font-style:italic">${desc}</span><br><span style="color:#ffa502">→ Effects: ${effects}</span>`;
+            container.appendChild(entry);
+            // Auto-scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // ==================== HEALTH CALCULATOR ====================
+        function calculateHealthScore(player) {
+            let health = 100
+                - (player.malaria_infected * 0.4)
+                - (player.rat_disease_infected * 0.4)
+                - (player.rats * 0.1)
+                - (player.ddt * 0.1)
+                - (player.deaths_this_turn * 2)
+                + (player.public_trust * 0.2);
+            return Math.max(0, Math.min(100, Math.round(health)));
+        }
+        
+        function updateHealthMeter() {
+            let player = getCurrentPlayer();
+            let health = calculateHealthScore(player);
+            
+            let bar = document.getElementById('healthBar');
+            let percent = document.getElementById('healthPercent');
+            let value = document.getElementById('healthValue');
+            
+            bar.style.width = health + '%';
+            percent.textContent = health + '%';
+            
+            bar.className = 'health-bar';
+            if (health >= 70) {
+                bar.classList.add('green');
+                value.textContent = 'Healthy';
+            } else if (health >= 40) {
+                bar.classList.add('yellow');
+                value.textContent = 'Stressed';
+            } else {
+                bar.classList.add('red');
+                value.textContent = 'Critical!';
+            }
+        }
+        
+        // ==================== NAVIGATION ====================
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        function showHowToPlay() {
+            showScreen('howToPlayScreen');
+        }
+        
+        function goToNameScreen() {
+            numPlayers = parseInt(document.getElementById('playerCount').value);
+            let container = document.getElementById('nameFields');
+            container.innerHTML = '';
+            for (let i = 1; i <= numPlayers; i++) {
+                let div = document.createElement('div');
+                div.className = 'name-field';
+                div.innerHTML = `<label>Player ${i}</label><input type="text" id="playerName${i}" placeholder="Enter name" value="Player ${i}">`;
+                container.appendChild(div);
+            }
+            document.getElementById('validationMsg').classList.remove('show');
+            showScreen('nameScreen');
+        }
+        
+        function startGame() {
+            let names = [];
+            for (let i = 1; i <= numPlayers; i++) {
+                let name = document.getElementById(`playerName${i}`).value.trim();
+                if (!name) {
+                    document.getElementById('validationMsg').textContent = 'All names must be non-empty';
+                    document.getElementById('validationMsg').classList.add('show');
+                    return;
+                }
+                names.push(name);
+            }
+            
+            let unique = [...new Set(names)];
+            if (unique.length !== names.length) {
+                document.getElementById('validationMsg').textContent = 'Names must be unique';
+                document.getElementById('validationMsg').classList.add('show');
+                return;
+            }
+            
+            players = [];
+            for (let i = 0; i < numPlayers; i++) {
+                players.push(new Player(names[i], i));
+            }
+            
+            currentPlayerIndex = 0;
+            currentRound = 1;
+            lastPlayerIndexAtRoundEnd = -1;
+            roundEvents = []; // Reset round events
+            
+            // Reset pending advance state
+            pendingAdvance = false;
+            pendingAdvanceType = null;
+            pendingNextPlayerIndex = null;
+            pendingWasLastPlayerInRound = false;
+            
+            // Hide advance button initially
+            document.getElementById('advanceButtonContainer').style.display = 'none';
+            
+            // Set guaranteed funding round (60% round 7, 30% round 8, 10% round 9)
+            let fundingRoll = Math.random();
+            if (fundingRoll < 0.60) fundingRound = 7;
+            else if (fundingRoll < 0.90) fundingRound = 8;
+            else fundingRound = 9;
+            
+            // Clear any existing event banner
+            document.getElementById('eventBanner').classList.remove('active');
+            
+            // Clear event log
+            document.getElementById('logContainer').innerHTML = '<div class="log-entry"><span class="turn">Turn 1:</span> Choose your first policy action.</div>';
+            
+            showScreen('gameScreen');
+            updateGameUI();
+        }
+        
+        function restartGame() {
+            showScreen('startScreen');
+        }
+        
+        // ==================== GAMEPLAY ====================
+        function getCurrentPlayer() {
+            return players[currentPlayerIndex];
+        }
+        
+        // New 2-step flow: resolve action without advancing
+        function applyAction(action) {
+            let player = getCurrentPlayer();
+            if (player.turn > 12 || pendingAdvance) return;
+            
+            // Check affordability - prevent budget from going negative
+            // Do Nothing is always free and always available
+            if (action === 'ddt' && player.budget < 12) return;
+            if (action === 'cats' && player.budget < 15) return;
+            if (action === 'awareness' && player.budget < 10) return;
+            // Do Nothing is always allowed (cost = 0)
+            
+            // Determine if this is the last player in the round BEFORE incrementing turn
+            // Check if next sequential player would wrap to player 0 (start of new round)
+            let nextSequentialIndex = (currentPlayerIndex + 1) % numPlayers;
+            let isLastInRound = (nextSequentialIndex === 0);
+            
+            // If next player is already done (finished all turns), also mark as last in round
+            if (nextSequentialIndex !== 0) {
+                // Check if any players between now and wrap point are unfinished
+                let anyUnfinishedBeforeWrap = false;
+                for (let i = nextSequentialIndex; i < numPlayers; i++) {
+                    if (!players[i].isFinished()) {
+                        anyUnfinishedBeforeWrap = true;
+                        break;
+                    }
+                }
+                if (!anyUnfinishedBeforeWrap) {
+                    isLastInRound = true;
+                }
+            }
+            
+            // Hide event banner at start of new round (before first player takes turn)
+            if (isLastInRound) {
+                document.getElementById('eventBanner').classList.remove('active');
+            }
+            
+            let effectsLog = [];
+            player.applyAction(action, effectsLog);
+            player.applyNaturalDynamics();
+            player.applyDelayedEffects(effectsLog);
+            player.computeDeaths();
+            player.updateTrust();
+            player.clamp();
+            player.turn++;
+            player.recordTurn();
+            
+            logEvent(player, action, effectsLog);
+            
+            // Determine next step
+            let nextPlayerIndex = null;
+            
+            // Find next unfinished player
+            if (player.isFinished()) {
+                // Current player is done - find next unfinished
+                let found = false;
+                for (let i = 1; i <= numPlayers; i++) {
+                    let idx = (currentPlayerIndex + i) % numPlayers;
+                    if (!players[idx].isFinished()) {
+                        nextPlayerIndex = idx;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    // All players done
+                    pendingAdvanceType = 'endGame';
+                }
+            } else {
+                nextPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+                // Skip finished players
+                let checks = 0;
+                while (players[nextPlayerIndex].isFinished() && checks < numPlayers) {
+                    nextPlayerIndex = (nextPlayerIndex + 1) % numPlayers;
+                    checks++;
+                }
+                if (players[nextPlayerIndex].isFinished()) {
+                    pendingAdvanceType = 'endGame';
+                }
+            }
+            
+            // Set pending state - use isLastInRound for button label
+            pendingAdvance = true;
+            pendingNextPlayerIndex = nextPlayerIndex;
+            pendingWasLastPlayerInRound = isLastInRound;
+            
+            // Update button to show correct label
+            updateAdvanceButton();
+            
+            // Disable action buttons, show advance button
+            // CASE A: After selecting an action, all buttons should be disabled (not budget-related)
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                if (!btn.id || btn.id !== 'advanceBtn') {
+                    btn.disabled = true;
+                    btn.classList.remove('budget-disabled'); // Remove budget styling, use default disabled look
+                }
+            });
+            document.getElementById('advanceButtonContainer').style.display = 'block';
+            
+            // Scroll log to bottom
+            let container = document.getElementById('logContainer');
+            container.scrollTop = container.scrollHeight;
+            
+            // Update UI immediately after action
+            updateGameUI();
+        }
+        
+        function updateAdvanceButton() {
+            let btn = document.getElementById('advanceBtn');
+            // Get current player to check if on 12th turn
+            let player = getCurrentPlayer();
+            
+            // Check if this was the last player's 12th turn (game ending)
+            // Player.turn is incremented after action, so if turn is now 13, it was 12 before
+            let wasTurn12 = (player.turn > 12);
+            
+            if (pendingAdvanceType === 'endGame' || wasTurn12) {
+                btn.textContent = 'View Results';
+            } else {
+                btn.textContent = 'Next Player';
+            }
+        }
+        
+        // Manual advance function
+        function advanceTurnFlow() {
+            if (!pendingAdvance) return;
+            
+            let shouldAdvance = true;
+            
+            // Handle global event if needed
+            if (pendingWasLastPlayerInRound) {
+                currentRound++;
+                triggerGlobalEvent();
+            }
+            
+            // Move to next player or end game
+            if (pendingAdvanceType === 'endGame') {
+                endGame();
+                return;
+            } else if (pendingNextPlayerIndex !== null) {
+                currentPlayerIndex = pendingNextPlayerIndex;
+            }
+            
+            // Reset pending state
+            pendingAdvance = false;
+            pendingAdvanceType = null;
+            pendingNextPlayerIndex = null;
+            pendingWasLastPlayerInRound = false;
+            
+            // Hide advance button, enable action buttons
+            // The updateGameUI call will recalculate proper disabled states based on new player's budget
+            document.getElementById('advanceButtonContainer').style.display = 'none';
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                if (!btn.id || btn.id !== 'advanceBtn') {
+                    btn.disabled = false;
+                    btn.classList.remove('budget-disabled'); // Clean up any budget-disabled styling
+                }
+            });
+            
+            updateGameUI();
+        }
+        
+        function logEvent(player, actionName, effectsLog) {
+            let actionLabels = { ddt: 'Spray DDT', nothing: 'Do Nothing', cats: 'Cat Drop', awareness: 'Awareness Campaign' };
+            let actionCosts = { ddt: -12, nothing: 0, cats: -15, awareness: -10 };
+            
+            // Store previous values for comparison (need to get from dataLog)
+            let prevIdx = player.dataLog.turn.length - 2; // Previous turn index
+            let prevBudget = prevIdx >= 0 ? player.dataLog.budget[prevIdx] : 100;
+            let budgetChange = player.budget - prevBudget;
+            
+            // Immersive narrative messages
+            let narrative = '';
+            switch(actionName) {
+                case 'ddt':
+                    narrative = 'WHO teams spray large quantities of DDT across affected zones.';
+                    if (player.mosquitoes < 50) {
+                        narrative += ' Mosquito populations collapse rapidly.';
+                    }
+                    break;
+                case 'nothing':
+                    narrative = 'No intervention taken this month. Mosquito breeding continues unchecked.';
+                    if (player.public_trust < 60) {
+                        narrative += ' Community anxiety rises.';
+                    }
+                    break;
+                case 'cats':
+                    narrative = 'Parachuted cats are released into the villages.';
+                    break;
+                case 'ratControl':
+                    narrative = 'Rodent control teams deploy traps and poison.';
+                    break;
+                case 'awareness':
+                    narrative = 'Community health workers begin an awareness campaign across the villages.';
+                    break;
+            }
+            
+            let logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            // Header with player, turn, action
+            let html = `<span class="turn">${player.name} • Turn ${player.turn}:</span> <span class="action">${actionLabels[actionName]}</span>`;
+            html += `<br><span style="color:#aaa;font-style:italic">"${narrative}"</span>`;
+            
+            // Budget change
+            let budgetColor = budgetChange < 0 ? '#ff6b81' : (budgetChange > 0 ? '#2ed573' : '#aaa');
+            html += `<br><span style="color:${budgetColor}">💰 Budget: ${budgetChange >= 0 ? '+' : ''}${budgetChange}</span>`;
+            
+            // Key stats after action
+            html += `<br><span style="color:#ff9f43">📊 Stats:</span> `;
+            html += `🦟${player.mosquitoes} `;
+            html += `🐱${player.cats} `;
+            html += `🐀${player.rats} `;
+            html += `🤒 Malaria:${player.malaria_infected} `;
+            html += `🐀Disease:${player.rat_disease_infected} `;
+            html += `❤️ Trust:${player.public_trust}`;
+            
+            // Add delayed effect narratives
+            let delayedNarrative = '';
+            if (effectsLog.some(e => e.includes('DDT harm'))) {
+                delayedNarrative = '⚠️ DDT ecological harm emerges: dead cats, rats increasing!';
+            } else if (effectsLog.some(e => e.includes('Cat drop'))) {
+                delayedNarrative = '🐱 Cat drop effects: cats deployed, rats retreating!';
+            } else if (effectsLog.some(e => e.includes('Rat control'))) {
+                delayedNarrative = '⚠️ Rat control effects: rats reduced but some collateral damage.';
+            }
+            
+            if (delayedNarrative) {
+                html += `<br><span style="color:#ffd700">${delayedNarrative}</span>`;
+            }
+            
+            // Deaths
+            html += `<br><span class="deaths">☠️ Deaths this turn: ${player.deaths_this_turn}</span>`;
+            logEntry.innerHTML = html;
+            
+            let container = document.getElementById('logContainer');
+            container.appendChild(logEntry);
+            // Auto-scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function renderPlayersSidebar() {
+            const sidebar = document.getElementById('playersSidebar');
+            sidebar.innerHTML = '';
+            
+            players.forEach((p, idx) => {
+                const isActive = (idx === currentPlayerIndex);
+                const health = calculateHealthScore(p);
+                
+                let healthColor = '#2ed573';
+                if (health < 60) healthColor = '#ffa502';
+                if (health < 30) healthColor = '#ff4757';
+                
+                const card = document.createElement('div');
+                card.className = `player-card${isActive ? ' active' : ''}`;
+                card.innerHTML = `
+                    <h3>
+                        <span>${p.name || 'Player ' + (idx + 1)}</span>
+                        ${isActive ? '<span class="active-badge">ACTIVE</span>' : ''}
+                    </h3>
+                    <div class="stat-row">
+                        <span class="stat-label">Turn:</span>
+                        <span class="stat-value">${Math.min(p.turn, 12)} / 12</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Budget:</span>
+                        <span class="stat-value">${p.budget}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Deaths:</span>
+                        <span class="stat-value" style="color:#ff4757">${p.deaths_cumulative}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Trust:</span>
+                        <span class="stat-value">${p.public_trust}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Mosquitoes:</span>
+                        <span class="stat-value">${p.mosquitoes}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">DDT:</span>
+                        <span class="stat-value">${p.ddt}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Cats:</span>
+                        <span class="stat-value">${p.cats}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Rats:</span>
+                        <span class="stat-value">${p.rats}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Malaria:</span>
+                        <span class="stat-value">${p.malaria_infected}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Rat Disease:</span>
+                        <span class="stat-value">${p.rat_disease_infected}</span>
+                    </div>
+                    <div class="health-mini">
+                        <span style="color:${healthColor}">🏥 Health: ${Math.round(health)}%</span>
+                        <div class="health-mini-bar">
+                            <div class="health-mini-fill" style="width:${health}%;background:${healthColor}"></div>
+                        </div>
+                    </div>
+                `;
+                sidebar.appendChild(card);
+            });
+        }
+        
+        function updateGameUI() {
+            let player = getCurrentPlayer();
+            let p = player;
+            
+            // Render all player cards in sidebar
+            renderPlayersSidebar();
+            
+            // Player indicator
+            document.getElementById('playerIndicator').innerHTML = players.map((pl, idx) => {
+                let cls = 'waiting';
+                if (idx === currentPlayerIndex) cls = 'current';
+                else if (pl.isFinished()) cls = 'finished';
+                return `<span class="player-badge ${cls}">${pl.name}${pl.isFinished() ? ' ✓' : ''}</span>`;
+            }).join('');
+            
+            document.getElementById('scoreSoFar').textContent = `Score: ${player.calculateScore().score}/100`;
+            
+            // Update round indicator
+            document.getElementById('roundIndicator').textContent = `Round ${currentRound}`;
+            
+            // Update health meter
+            updateHealthMeter();
+            
+            // Stats - Left panel (with null checks)
+            let currentPlayerNameEl = document.getElementById('currentPlayerName');
+            if (currentPlayerNameEl) currentPlayerNameEl.textContent = player.name;
+            let turnDisplayEl = document.getElementById('turnDisplay');
+            if (turnDisplayEl) turnDisplayEl.textContent = Math.min(player.turn, 12) + ' / 12';
+            let budgetDisplayEl = document.getElementById('budgetDisplay');
+            if (budgetDisplayEl) budgetDisplayEl.textContent = p.budget;
+            let deathsCumEl = document.getElementById('deathsCumulativeDisplay');
+            if (deathsCumEl) deathsCumEl.textContent = p.deaths_cumulative;
+            let deathsTurnEl = document.getElementById('deathsThisTurnDisplay');
+            if (deathsTurnEl) deathsTurnEl.textContent = p.deaths_this_turn;
+            
+            let trustEl = document.getElementById('publicTrustDisplay');
+            if (trustEl) {
+                trustEl.textContent = p.public_trust;
+                trustEl.className = 'stat-value ' + (p.public_trust < 25 ? 'danger' : p.public_trust < 50 ? 'warning' : 'success');
+            }
+            
+            // Key Stats - Right panel (all ecological variables)
+            document.getElementById('mosquitoesDisplay').textContent = p.mosquitoes;
+            document.getElementById('ddtDisplay').textContent = p.ddt;
+            
+            let catsEl = document.getElementById('catsDisplay');
+            catsEl.textContent = p.cats;
+            catsEl.className = 'stat-value ' + (p.cats < 25 ? 'danger' : p.cats < 50 ? 'warning' : 'success');
+            
+            let ratsEl = document.getElementById('ratsDisplay');
+            ratsEl.textContent = p.rats;
+            ratsEl.className = 'stat-value ' + (p.rats > 75 ? 'danger' : p.rats > 50 ? 'warning' : 'success');
+            
+            let malEl = document.getElementById('malariaDisplay');
+            malEl.textContent = p.malaria_infected;
+            malEl.className = 'stat-value ' + (p.malaria_infected > 75 ? 'danger' : p.malaria_infected > 50 ? 'warning' : '');
+            
+            let ratEl = document.getElementById('ratDiseaseDisplay');
+            ratEl.textContent = p.rat_disease_infected;
+            ratEl.className = 'stat-value ' + (p.rat_disease_infected > 75 ? 'danger' : p.rat_disease_infected > 50 ? 'warning' : '');
+            
+            // Turn info - show current round number (matches yellow round indicator at top)
+            var turnEl = document.getElementById('turnNumberDisplay');
+            var roundVal = currentRound || 1;
+            if (turnEl) {
+                turnEl.textContent = 'Turn ' + roundVal;
+            }
+            
+            // Button states - disable actions based on affordability and pending state
+            let currentBudget = p.budget;
+            let catCost = 15; // Static cost
+            let gameOver = (p.turn > 12);
+            
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                // Skip the advance button - it doesn't have the same onclick pattern
+                if (btn.id === 'advanceBtn') return;
+                
+                let actionMatch = btn.getAttribute('onclick').match(/'(.*)'/);
+                if (!actionMatch) return;
+                let action = actionMatch[1];
+                let disabled = false;
+                let addBudgetDisabledClass = false;
+                
+                // Check affordability FIRST - disable if can't afford (CASE B)
+                if (action === 'ddt' && currentBudget < 12) { disabled = true; addBudgetDisabledClass = true; }
+                else if (action === 'cats' && currentBudget < catCost) { disabled = true; addBudgetDisabledClass = true; }
+                else if (action === 'awareness' && currentBudget < 10) { disabled = true; addBudgetDisabledClass = true; }
+                // Do Nothing is always enabled (costs 0)
+                
+                // Also disable if waiting for manual advance (CASE A - all buttons)
+                if (pendingAdvance) {
+                    disabled = true;
+                    addBudgetDisabledClass = false; // Not budget-related
+                }
+                
+                // Also disable if game is over
+                if (gameOver) disabled = true;
+                
+                // Apply disabled state
+                btn.disabled = disabled;
+                
+                // Apply visual styling for budget-disabled buttons
+                if (addBudgetDisabledClass) {
+                    btn.classList.add('budget-disabled');
+                } else {
+                    btn.classList.remove('budget-disabled');
+                }
+            });
+            
+            // Show/hide advance button based on state
+            if (!pendingAdvance) {
+                document.getElementById('advanceButtonContainer').style.display = 'none';
+            }
+        }
+        
+        function toggleNotes() {
+            document.getElementById('modelNotes').classList.toggle('collapsed');
+        }
+        
+        // ==================== RESULTS ====================
+        function endGame() {
+            showScreen('resultsScreen');
+            
+            let results = players.map(p => ({ player: p, scoreData: p.calculateScore() }));
+            
+            results.sort((a, b) => {
+                if (b.scoreData.score !== a.scoreData.score) return b.scoreData.score - a.scoreData.score;
+                if (a.scoreData.total_deaths !== b.scoreData.total_deaths) return a.scoreData.total_deaths - b.scoreData.total_deaths;
+                if (a.scoreData.peak_infection !== b.scoreData.peak_infection) return a.scoreData.peak_infection - b.scoreData.peak_infection;
+                if (a.scoreData.outbreak_duration !== b.scoreData.outbreak_duration) return a.scoreData.outbreak_duration - b.scoreData.outbreak_duration;
+                if (a.scoreData.final_trust !== b.scoreData.final_trust) return b.scoreData.final_trust - a.scoreData.final_trust;
+                if (a.scoreData.final_budget !== b.scoreData.final_budget) return b.scoreData.final_budget - a.scoreData.final_budget;
+                return 0;
+            });
+            
+            let maxScore = results[0].scoreData.score;
+            let winners = results.filter(r => r.scoreData.score === maxScore);
+            
+            let banner = document.getElementById('winnerBanner');
+            banner.style.display = 'block';
+            document.getElementById('winnerName').textContent = winners.length === 1 ? winners[0].player.name : winners.map(w => w.player.name).join(' & ');
+            
+            let tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+            results.forEach((r, idx) => {
+                let sd = r.scoreData;
+                tbody.innerHTML += `<tr>
+                    <td class="rank-col">${idx + 1}</td>
+                    <td>${r.player.name}</td>
+                    <td class="score-col">${sd.score}</td>
+                    <td>${sd.total_deaths}</td>
+                    <td>${sd.peak_infection}</td>
+                    <td>${sd.outbreak_duration}</td>
+                    <td>${sd.eco_events}</td>
+                    <td>${sd.final_trust}</td>
+                    <td>${sd.final_budget}</td>
+                </tr>`;
+            });
+            
+            ['diseasePlayerSelect', 'populationPlayerSelect', 'deathsPlayerSelect'].forEach(selId => {
+                document.getElementById(selId).innerHTML = players.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+            });
+            
+            setTimeout(() => createCharts(), 100);
+        }
+        
+        function createCharts() {
+            if (diseaseChart) diseaseChart.destroy();
+            if (populationChart) populationChart.destroy();
+            if (deathsChart) deathsChart.destroy();
+            
+            let player = players[0];
+            let log = player.dataLog;
+            
+            // Calculate max deaths across ALL players for consistent Y-axis
+            let maxDeaths = 0;
+            players.forEach(p => {
+                let pMax = Math.max(...p.dataLog.deaths_cumulative);
+                if (pMax > maxDeaths) maxDeaths = pMax;
+            });
+            maxDeaths = Math.max(maxDeaths, 50); // Minimum 50 for better visualization
+            globalMaxDeaths = maxDeaths; // Save globally
+            
+            // Create labels with action indicators and event tags
+            let labels = [];
+            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', awareness: '📢' };
+            for (let i = 0; i < log.turn.length; i++) {
+                let turnNum = log.turn[i];
+                // Find the action for this specific turn
+                let actionEntry = player.actionHistory.find(a => a.turn === turnNum);
+                let action = actionEntry ? actionEntry.action : '';
+                let symbol = actionSymbols[action] || '';
+                
+                // Find event for this turn's round
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let eventTag = '';
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                if (roundEvt) {
+                    eventTag = ' [' + roundEvt.event + ']';
+                }
+                
+                labels.push('T' + turnNum + symbol + eventTag);
+            }
+            
+            diseaseChart = new Chart(document.getElementById('diseaseChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Malaria', data: log.malaria_infected, borderColor: '#ff4757', fill: false, tension: 0.3 },
+                        { label: 'Rat Disease', data: log.rat_disease_infected, borderColor: '#ffa502', fill: false, tension: 0.3 }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: '#aaa', font: { size: 10 } } } },
+                    scales: { 
+                        x: { title: { display: true, text: 'Turn', color: '#888' }, ticks: { color: '#888', font: { size: 9 } } }, 
+                        y: { title: { display: true, text: 'Level', color: '#888' }, min: 0, max: 100, ticks: { color: '#888', font: { size: 9 } } } 
+                    } 
+                }
+            });
+            
+            populationChart = new Chart(document.getElementById('populationChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Cats', data: log.cats, borderColor: '#2ed573', fill: false, tension: 0.3 },
+                        { label: 'Rats', data: log.rats, borderColor: '#ff6b81', fill: false, tension: 0.3 }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: '#aaa', font: { size: 10 } } } },
+                    scales: { 
+                        x: { title: { display: true, text: 'Turn', color: '#888' }, ticks: { color: '#888', font: { size: 9 } } }, 
+                        y: { title: { display: true, text: 'Population', color: '#888' }, min: 0, max: 150, ticks: { color: '#888', font: { size: 9 } } } 
+                    } 
+                }
+            });
+            
+            deathsChart = new Chart(document.getElementById('deathsChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Deaths/Turn', data: log.deaths_this_turn, borderColor: '#ff4757', fill: false, tension: 0.3 },
+                        { label: 'Cumulative', data: log.deaths_cumulative, borderColor: '#ffa502', fill: false, tension: 0.3 }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: '#aaa', font: { size: 10 } } } },
+                    scales: { 
+                        x: { title: { display: true, text: 'Turn', color: '#888' }, ticks: { color: '#888', font: { size: 9 } } }, 
+                        y: { title: { display: true, text: 'Deaths', color: '#888' }, min: 0, max: maxDeaths, ticks: { color: '#888', font: { size: 9 } } } 
+                    } 
+                }
+            });
+        }
+        
+        function updateDiseaseChart() {
+            // Reset compare mode if active
+            if (compareDisease) {
+                compareDisease = false;
+                document.querySelectorAll('.chart-section')[0].querySelector('.btn-compare').classList.remove('active');
+            }
+            let idx = parseInt(document.getElementById('diseasePlayerSelect').value);
+            let p = players[idx];
+            let log = p.dataLog;
+            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', awareness: '📢' };
+            let labels = [];
+            for (let i = 0; i < log.turn.length; i++) {
+                let turnNum = log.turn[i];
+                let actionEntry = p.actionHistory.find(a => a.turn === turnNum);
+                let action = actionEntry ? actionEntry.action : '';
+                let symbol = actionSymbols[action] || '';
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let eventTag = '';
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                if (roundEvt) {
+                    eventTag = ' [' + roundEvt.event + ']';
+                }
+                labels.push('T' + turnNum + symbol + eventTag);
+            }
+            // Rebuild datasets array for single player
+            diseaseChart.data.labels = labels;
+            diseaseChart.data.datasets = [
+                { label: 'Malaria', data: p.dataLog.malaria_infected, borderColor: '#ff4757', fill: false, tension: 0.3 },
+                { label: 'Rat Disease', data: p.dataLog.rat_disease_infected, borderColor: '#ffa502', fill: false, tension: 0.3 }
+            ];
+            diseaseChart.update();
+        }
+        
+        function updatePopulationChart() {
+            // Reset compare mode if active
+            if (comparePopulation) {
+                comparePopulation = false;
+                document.querySelectorAll('.chart-section')[1].querySelector('.btn-compare').classList.remove('active');
+            }
+            let idx = parseInt(document.getElementById('populationPlayerSelect').value);
+            let p = players[idx];
+            let log = p.dataLog;
+            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
+            let labels = [];
+            for (let i = 0; i < log.turn.length; i++) {
+                let turnNum = log.turn[i];
+                let actionEntry = p.actionHistory.find(a => a.turn === turnNum);
+                let action = actionEntry ? actionEntry.action : '';
+                let symbol = actionSymbols[action] || '';
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let eventTag = '';
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                if (roundEvt) {
+                    eventTag = ' [' + roundEvt.event + ']';
+                }
+                labels.push('T' + turnNum + symbol + eventTag);
+            }
+            // Rebuild datasets array for single player
+            populationChart.data.labels = labels;
+            populationChart.data.datasets = [
+                { label: 'Cats', data: p.dataLog.cats, borderColor: '#2ed573', fill: false, tension: 0.3 },
+                { label: 'Rats', data: p.dataLog.rats, borderColor: '#ff6b81', fill: false, tension: 0.3 }
+            ];
+            populationChart.update();
+        }
+        
+        function updateDeathsChart() {
+            // Reset compare mode if active
+            if (compareDeaths) {
+                compareDeaths = false;
+                document.querySelectorAll('.chart-section')[2].querySelector('.btn-compare').classList.remove('active');
+            }
+            let idx = parseInt(document.getElementById('deathsPlayerSelect').value);
+            let p = players[idx];
+            let log = p.dataLog;
+            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
+            let labels = [];
+            for (let i = 0; i < log.turn.length; i++) {
+                let turnNum = log.turn[i];
+                let actionEntry = p.actionHistory.find(a => a.turn === turnNum);
+                let action = actionEntry ? actionEntry.action : '';
+                let symbol = actionSymbols[action] || '';
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let eventTag = '';
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                if (roundEvt) {
+                    eventTag = ' [' + roundEvt.event + ']';
+                }
+                labels.push('T' + turnNum + symbol + eventTag);
+            }
+            // Rebuild datasets array for single player
+            deathsChart.data.labels = labels;
+            deathsChart.data.datasets = [
+                { label: 'Deaths/Turn', data: p.dataLog.deaths_this_turn, borderColor: '#ff4757', fill: false, tension: 0.3 },
+                { label: 'Cumulative', data: p.dataLog.deaths_cumulative, borderColor: '#ffa502', fill: false, tension: 0.3 }
+            ];
+            deathsChart.options.scales.y.max = globalMaxDeaths;
+            deathsChart.update();
+        }
+        
+        // Toggle functions for Compare All Players mode
+        function toggleCompareDisease() {
+            compareDisease = !compareDisease;
+            // Update button styling
+            document.querySelectorAll('.chart-section')[0].querySelector('.btn-compare').classList.toggle('active', compareDisease);
+            if (compareDisease) {
+                updateDiseaseChartCompareAll();
+            } else {
+                updateDiseaseChart();
+            }
+        }
+        
+        function toggleComparePopulation() {
+            comparePopulation = !comparePopulation;
+            document.querySelectorAll('.chart-section')[1].querySelector('.btn-compare').classList.toggle('active', comparePopulation);
+            if (comparePopulation) {
+                updatePopulationChartCompareAll();
+            } else {
+                updatePopulationChart();
+            }
+        }
+        
+        function toggleCompareDeaths() {
+            compareDeaths = !compareDeaths;
+            document.querySelectorAll('.chart-section')[2].querySelector('.btn-compare').classList.toggle('active', compareDeaths);
+            if (compareDeaths) {
+                updateDeathsChartCompareAll();
+            } else {
+                updateDeathsChart();
+            }
+        }
+        
+        // Compare All functions for each chart
+        function updateDiseaseChartCompareAll() {
+            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
+            // Use first player's labels as reference
+            let refLog = players[0].dataLog;
+            let labels = [];
+            for (let i = 0; i < refLog.turn.length; i++) {
+                let turnNum = refLog.turn[i];
+                let actionEntry = players[0].actionHistory.find(a => a.turn === turnNum);
+                let action = actionEntry ? actionEntry.action : '';
+                let symbol = actionSymbols[action] || '';
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
+                labels.push('T' + turnNum + symbol + eventTag);
+            }
+            
+            // Build datasets for all players
+            let datasets = [];
+            let colors = ['#ff4757', '#ffa502', '#2ed573', '#00d4ff'];
+            let patterns = ['', '--', '-.', ':'];
+            players.forEach((p, idx) => {
+                // Malaria - solid line
+                datasets.push({
+                    label: p.name + ' - Malaria',
+                    data: p.dataLog.malaria_infected,
+                    borderColor: colors[idx % colors.length],
+                    borderDash: [],
+                    fill: false,
+                    tension: 0.3
+                });
+                // Rat Disease - dashed line
+                datasets.push({
+                    label: p.name + ' - Rat Disease',
+                    data: p.dataLog.rat_disease_infected,
+                    borderColor: colors[idx % colors.length],
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.3
+                });
+            });
+            
+            diseaseChart.data.labels = labels;
+            diseaseChart.data.datasets = datasets;
+            diseaseChart.update();
+        }
+        
+        function updatePopulationChartCompareAll() {
+            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
+            let refLog = players[0].dataLog;
+            let labels = [];
+            for (let i = 0; i < refLog.turn.length; i++) {
+                let turnNum = refLog.turn[i];
+                let actionEntry = players[0].actionHistory.find(a => a.turn === turnNum);
+                let action = actionEntry ? actionEntry.action : '';
+                let symbol = actionSymbols[action] || '';
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
+                labels.push('T' + turnNum + symbol + eventTag);
+            }
+            
+            let datasets = [];
+            let colors = ['#ff4757', '#ffa502', '#2ed573', '#00d4ff'];
+            players.forEach((p, idx) => {
+                // Cats - solid line
+                datasets.push({
+                    label: p.name + ' - Cats',
+                    data: p.dataLog.cats,
+                    borderColor: colors[idx % colors.length],
+                    borderDash: [],
+                    fill: false,
+                    tension: 0.3
+                });
+                // Rats - dashed line
+                datasets.push({
+                    label: p.name + ' - Rats',
+                    data: p.dataLog.rats,
+                    borderColor: colors[idx % colors.length],
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.3
+                });
+            });
+            
+            populationChart.data.labels = labels;
+            populationChart.data.datasets = datasets;
+            populationChart.update();
+        }
+        
+        function updateDeathsChartCompareAll() {
+            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
+            let refLog = players[0].dataLog;
+            let labels = [];
+            for (let i = 0; i < refLog.turn.length; i++) {
+                let turnNum = refLog.turn[i];
+                let actionEntry = players[0].actionHistory.find(a => a.turn === turnNum);
+                let action = actionEntry ? actionEntry.action : '';
+                let symbol = actionSymbols[action] || '';
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
+                labels.push('T' + turnNum + symbol + eventTag);
+            }
+            
+            let datasets = [];
+            let colors = ['#ff4757', '#ffa502', '#2ed573', '#00d4ff'];
+            players.forEach((p, idx) => {
+                // Deaths/Turn - solid line
+                datasets.push({
+                    label: p.name + ' - Deaths/Turn',
+                    data: p.dataLog.deaths_this_turn,
+                    borderColor: colors[idx % colors.length],
+                    borderDash: [],
+                    fill: false,
+                    tension: 0.3
+                });
+                // Cumulative - dashed line
+                datasets.push({
+                    label: p.name + ' - Cumulative',
+                    data: p.dataLog.deaths_cumulative,
+                    borderColor: colors[idx % colors.length],
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.3
+                });
+            });
+            
+            deathsChart.data.labels = labels;
+            deathsChart.data.datasets = datasets;
+            deathsChart.options.scales.y.max = globalMaxDeaths;
+            deathsChart.update();
+        }
+        
+        function exportAllCSV() {
+            // Create a single CSV file with all players' data
+            let csv = 'Player,Turn,Mosquitoes,DDT,Cats,Rats,Malaria,RatDisease,DeathsTurn,DeathsCum,Trust,Budget\n';
+            
+            players.forEach((p) => {
+                for (let i = 0; i < p.dataLog.turn.length; i++) {
+                    csv += `"${p.name}",${p.dataLog.turn[i]},${p.dataLog.mosquitoes[i]},${p.dataLog.ddt[i]},${p.dataLog.cats[i]},${p.dataLog.rats[i]},${p.dataLog.malaria_infected[i]},${p.dataLog.rat_disease_infected[i]},${p.dataLog.deaths_this_turn[i]},${p.dataLog.deaths_cumulative[i]},${p.dataLog.public_trust[i]},${p.dataLog.budget[i]}\n`;
+                }
+            });
+            
+            let blob = new Blob([csv], { type: 'text/csv' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'all_players_game_data.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
