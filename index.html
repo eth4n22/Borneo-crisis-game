@@ -1210,6 +1210,89 @@
             color: #aaa;
         }
         
+        /* Card Draw Animation */
+        .card-draw-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .card-draw-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .card-draw-container {
+            text-align: center;
+        }
+        
+        .card-draw-label {
+            color: #f39c12;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+        }
+        
+        .card-draw-card {
+            transform: translateY(-50px) scale(0.5);
+            opacity: 0;
+            animation: cardDrawAnim 0.7s ease-out forwards;
+        }
+        
+        .card-draw-card .card-name {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        
+        .card-draw-card .card-effect {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        
+        @keyframes cardDrawAnim {
+            0% {
+                transform: translateY(-50px) scale(0.5) rotateY(90deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(0) scale(1.1) rotateY(0deg);
+                opacity: 1;
+            }
+            70% {
+                transform: translateY(-10px) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .card-draw-card.bonus-funding {
+            border: 3px solid #f39c12;
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%);
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.5);
+            animation: cardDrawAnim 0.7s ease-out forwards, bonusGlow 1s ease-in-out infinite;
+        }
+        
+        @keyframes bonusGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(243, 156, 18, 0.8); }
+        }
+        
         .end-turn-btn {
             width: 100%;
             padding: 12px;
@@ -1461,8 +1544,9 @@
                 <h3>🔄 B. Turn Structure</h3>
                 <p>Every turn follows this simple flow:</p>
                 <ol style="margin-left: 20px; line-height: 2;">
-                    <li><strong>Start of Turn:</strong> You automatically receive <strong>+5 budget</strong>.</li>
-                    <li><strong>Choose One:</strong> Either <em>Draw 1 Card</em> to add a new action to your hand, OR take <em>+10 Budget</em> right now. (You cannot do both.)</li>
+                    <li><strong>Start of Turn:</strong> You automatically receive <strong>+3 budget</strong>. If you chose +10 last turn, you also receive a <strong>+3 investment bonus</strong>.</li>
+                    <li><strong>Auto-Draw:</strong> You automatically draw 1 card at the start of each turn.</li>
+                    <li><strong>Choose One:</strong> Either take <em>+10 Budget</em> right now, OR draw 1 extra card. (You cannot do both.)</li>
                     <li><strong>Play Cards:</strong> Click any cards in your hand to select them. Selected cards are queued to play.</li>
                     <li><strong>End Turn:</strong> Press End Turn to execute all selected cards and pass play to the next player.</li>
                 </ol>
@@ -1594,7 +1678,7 @@
                     <li><strong>Balance Everything:</strong> Overusing one option causes problems. DDT kills mosquitoes but harms cats → rats multiply → more disease!</li>
                     <li><strong>Roof & Grain Are Vital:</strong> Disease isn't the only threat. Low roofs cause exposure harm. Low grain causes starvation harm.</li>
                     <li><strong>Trust Matters:</strong> At 70+ trust, your village gets a +1 health recovery each turn.</li>
-                    <li><strong>Choose Your Start:</strong> Sometimes drawing a card is better; sometimes +10 budget helps more. Watch your resources!</li>
+                    <li><strong>Investment Strategy:</strong> Choosing +10 budget gives you a +3 bonus next turn. Build up your economy or expand your options!</li>
                 </ul>
                 <p style="margin-top: 10px; text-align: center; color: #888;">💡 <em>Quick Loop: DDT → fewer mosquitoes → but may → fewer cats → more rats → more plague + grain loss → village hurt!</em></p>
             </div>
@@ -1631,17 +1715,18 @@
                             <tr><td>Repair Thatch</td><td>8</td><td>Roof +25, Trust +1</td></tr>
                             <tr><td>Protect Grain</td><td>6</td><td>Grain +15, Trust +1</td></tr>
                             <tr><td>Medical Aid</td><td>5</td><td>Malaria −8, Plague −8</td></tr>
-                            <tr><td>Bonus Funding</td><td>0</td><td>Budget +15</td></tr>
+                            <tr><td>Bonus Funding</td><td>0</td><td>Budget +15 (rare)</td></tr>
                         </table>
                     </div>
                     
                     <div class="howto-subsection">
                         <h4>💰 Budget System</h4>
                         <ul>
-                            <li><strong>Starting Budget:</strong> 15</li>
-                            <li><strong>Turn Growth:</strong> +5 flat at start of each turn</li>
-                            <li><strong>Draw Option:</strong> Add random card to hand (max 6)</li>
-                            <li><strong>Budget Option:</strong> +10 immediate</li>
+                            <li><strong>Starting Budget:</strong> 10</li>
+                            <li><strong>Turn Growth:</strong> +3 flat at start of each turn</li>
+                            <li><strong>Investment Bonus:</strong> +3 next turn if you chose +10 budget</li>
+                            <li><strong>Auto-Draw:</strong> 1 card drawn automatically each turn</li>
+                            <li><strong>Choose One:</strong> +10 budget OR draw 1 extra card</li>
                         </ul>
                     </div>
                     
@@ -1841,7 +1926,7 @@
                         
                         <div id="turnChoiceContainer" class="turn-choice-container" style="display: none;">
                             <button id="drawCardBtn" class="choice-btn" onclick="chooseDrawCard()">
-                                🃏 Draw 1 Card
+                                🃏 Draw 1 Extra Card
                             </button>
                             <button id="gainBudgetBtn" class="choice-btn" onclick="chooseGainBudget()">
                                 💰 Gain +10 Budget
@@ -1852,6 +1937,14 @@
                             <button id="endTurnBtn" class="end-turn-btn" onclick="endTurnFlow()">
                                 ⏭️ End Turn
                             </button>
+                        </div>
+                        
+                        <!-- Card Draw Animation Overlay -->
+                        <div id="cardDrawOverlay" class="card-draw-overlay">
+                            <div class="card-draw-container">
+                                <div class="card-draw-label">🎴 Card Drawn!</div>
+                                <div id="cardDrawCard" class="card-draw-card"></div>
+                            </div>
                         </div>
                         
                         <!-- Manual Advance Button -->
@@ -1971,12 +2064,13 @@
                 this.deaths_cumulative = 0;
                 this.deaths_this_turn = 0;
                 this.public_trust = 70;
-                this.budget = 15;
+                this.budget = 10;
                 
                 // Card system
                 this.hand = [];
                 this.selectedCards = []; // Cards selected for play this turn
                 this.startOfTurnChoiceMade = false; // track if draw/+10 choice made
+                this.pendingInvestmentBonus = false; // investment bonus for choosing +10 budget
                 
                 // Delay queues
                 this.deaths_queue = [0, 0];
@@ -2103,17 +2197,17 @@
             
             // Card draw with weighted probabilities
             // Normal action cards: cats, ddt, awareness, repair, grain, medical_aid (equal weight)
-            // Bonus Funding: less frequent
+            // Bonus Funding: noticeably rarer (1 in 28)
             drawCard() {
-                // Weighted deck: 6 normal cards each appear 3 times, bonus_funding appears 1 time
-                // Total: 19 cards in deck
+                // Weighted deck: 6 normal cards each appear 4 times, bonus_funding appears 1 time
+                // Total: 25 cards in deck
                 const cardDeck = [
-                    'cats', 'cats', 'cats',
-                    'ddt', 'ddt', 'ddt',
-                    'awareness', 'awareness', 'awareness',
-                    'repair', 'repair', 'repair',
-                    'grain', 'grain', 'grain',
-                    'medical_aid', 'medical_aid', 'medical_aid',
+                    'cats', 'cats', 'cats', 'cats',
+                    'ddt', 'ddt', 'ddt', 'ddt',
+                    'awareness', 'awareness', 'awareness', 'awareness',
+                    'repair', 'repair', 'repair', 'repair',
+                    'grain', 'grain', 'grain', 'grain',
+                    'medical_aid', 'medical_aid', 'medical_aid', 'medical_aid',
                     'bonus_funding'
                 ];
                 const randomIndex = Math.floor(Math.random() * cardDeck.length);
@@ -2224,9 +2318,9 @@
             }
             
             applyStartOfTurnBudgetGrowth() {
-                // Add flat +5 (no interest)
-                this.budget += 5;
-                return 5;
+                // Add flat +3 (no interest)
+                this.budget += 3;
+                return 3;
             }
             
             // ==================== END CARD SYSTEM ====================
@@ -2690,13 +2784,58 @@
         
         // ==================== CARD-BASED TURN SYSTEM ====================
         
-        // Start of turn - apply budget growth and show choice UI
+        // Start of turn - apply budget growth, investment bonus, and show choice UI
         function startTurnFlow() {
             let player = getCurrentPlayer();
             
-            // Apply start-of-turn budget growth
-            let budgetGain = player.applyStartOfTurnBudgetGrowth();
+            let totalBudgetGain = 0;
             
+            // STEP 1: Check for pending investment bonus from choosing +10 last turn
+            if (player.pendingInvestmentBonus) {
+                player.budget += 3;
+                totalBudgetGain += 3;
+                player.pendingInvestmentBonus = false;
+                
+                // Log the investment bonus
+                let investLog = document.createElement('div');
+                investLog.className = 'log-entry';
+                investLog.innerHTML = `<span style="color:#f39c12">💎 Investment bonus: +3 (from choosing +10 last turn)</span>`;
+                document.getElementById('logContainer').appendChild(investLog);
+            }
+            
+            // STEP 2: Apply normal start-of-turn budget growth
+            let budgetGain = player.applyStartOfTurnBudgetGrowth();
+            totalBudgetGain += budgetGain;
+            
+            // STEP 3: Automatically draw 1 card (unless hand is full) with animation
+            if (player.hand.length < 6) {
+                let drawnCard = player.drawCard();
+                
+                // Show draw animation
+                showCardDrawAnimation(drawnCard, () => {
+                    // After animation: log the draw and continue UI
+                    let cardName = getCardDisplayName(drawnCard);
+                    let drawLog = document.createElement('div');
+                    drawLog.className = 'log-entry';
+                    drawLog.innerHTML = `<span style="color:#9b59b6">🎴 Auto-drew: ${cardName}</span>`;
+                    document.getElementById('logContainer').appendChild(drawLog);
+                    
+                    // Continue with rest of turn setup
+                    finishTurnSetup(player, totalBudgetGain);
+                });
+            } else {
+                let fullLog = document.createElement('div');
+                fullLog.className = 'log-entry';
+                fullLog.innerHTML = `<span style="color:#888">🎴 Hand full — no auto-draw this turn</span>`;
+                document.getElementById('logContainer').appendChild(fullLog);
+                
+                // Continue with rest of turn setup immediately
+                finishTurnSetup(player, totalBudgetGain);
+            }
+        }
+        
+        // Separate function to finish turn setup (called after animation)
+        function finishTurnSetup(player, totalBudgetGain) {
             // Reset turn choice state
             player.startOfTurnChoiceMade = false;
             player.selectedCards = []; // Reset selected cards
@@ -2707,7 +2846,7 @@
             // Log the budget growth
             let logEntry = document.createElement('div');
             logEntry.className = 'log-entry';
-            logEntry.innerHTML = `<span style="color:#2ed573">📈 ${player.name} start-of-turn funding increase: +5</span>`;
+            logEntry.innerHTML = `<span style="color:#2ed573">📈 ${player.name} start-of-turn funding: +${totalBudgetGain}</span>`;
             document.getElementById('logContainer').appendChild(logEntry);
             
             // Scroll log to bottom
@@ -2717,12 +2856,12 @@
             updateGameUI();
         }
         
-        // Player chooses to draw a card
+        // Player chooses to draw an extra card
         function chooseDrawCard() {
             let player = getCurrentPlayer();
             if (player.startOfTurnChoiceMade) return;
             
-            // Check if hand is full
+            // Check if hand is full (shouldn't happen due to button disable, but safety check)
             if (player.hand.length >= 6) {
                 alert("Your hand is full! You must choose +10 Budget instead.");
                 return;
@@ -2731,34 +2870,38 @@
             player.startOfTurnChoiceMade = true;
             let drawnCard = player.drawCard();
             
-            // Log the draw
-            let cardName = getCardDisplayName(drawnCard);
-            let logEntry = document.createElement('div');
-            logEntry.className = 'log-entry';
-            logEntry.innerHTML = `<span style="color:#f39c12">🎴 Drew ${cardName}</span>`;
-            document.getElementById('logContainer').appendChild(logEntry);
-            
-            // Scroll log to bottom
-            let container = document.getElementById('logContainer');
-            container.scrollTop = container.scrollHeight;
-            
-            // Show card playing UI
-            showCardPlayUI();
-            updateGameUI();
+            // Show draw animation
+            showCardDrawAnimation(drawnCard, () => {
+                // After animation: log the draw and continue UI
+                let cardName = getCardDisplayName(drawnCard);
+                let logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `<span style="color:#f39c12">🎴 Drew extra card: ${cardName}</span>`;
+                document.getElementById('logContainer').appendChild(logEntry);
+                
+                // Scroll log to bottom
+                let container = document.getElementById('logContainer');
+                container.scrollTop = container.scrollHeight;
+                
+                // Show card playing UI
+                showCardPlayUI();
+                updateGameUI();
+            });
         }
         
-        // Player chooses to gain +10 budget
+        // Player chooses to gain +10 budget (and sets investment bonus for next turn)
         function chooseGainBudget() {
             let player = getCurrentPlayer();
             if (player.startOfTurnChoiceMade) return;
             
             player.startOfTurnChoiceMade = true;
             player.budget += 10;
+            player.pendingInvestmentBonus = true; // Set investment bonus for next turn
             
             // Log the gain
             let logEntry = document.createElement('div');
             logEntry.className = 'log-entry';
-            logEntry.innerHTML = `<span style="color:#2ed573">💰 Gained +10 Budget</span>`;
+            logEntry.innerHTML = `<span style="color:#2ed573">💰 Gained +10 Budget (+3 investment bonus next turn)</span>`;
             document.getElementById('logContainer').appendChild(logEntry);
             
             // Scroll log to bottom
@@ -2951,6 +3094,58 @@
             return names[cardType] || cardType;
         }
         
+        // Helper to get effect description for cards
+        function getCardEffectDescription(cardType) {
+            const effects = {
+                'cats': 'Cats +18, Rats -10, Trust +1',
+                'ddt': 'Mosquitoes -18, DDT +20, Trust +2',
+                'awareness': 'Trust +8, Malaria -3, Rat Disease -3',
+                'repair': 'Roof +25, Trust +1',
+                'grain': 'Grain +15, Trust +1',
+                'bonus_funding': 'Budget +15',
+                'medical_aid': 'Malaria -8, Plague -8'
+            };
+            return effects[cardType] || '';
+        }
+        
+        // Show card draw animation
+        function showCardDrawAnimation(cardType, callback) {
+            const overlay = document.getElementById('cardDrawOverlay');
+            const cardDiv = document.getElementById('cardDrawCard');
+            
+            const cardName = getCardDisplayName(cardType);
+            const cardEffect = getCardEffectDescription(cardType);
+            
+            // Set card content
+            cardDiv.innerHTML = `
+                <div class="card-name">${cardName}</div>
+                <div class="card-effect">${cardEffect}</div>
+            `;
+            
+            // Add bonus-funding class for special styling
+            if (cardType === 'bonus_funding') {
+                cardDiv.classList.add('bonus-funding');
+            } else {
+                cardDiv.classList.remove('bonus-funding');
+            }
+            
+            // Reset animation by removing and re-adding the element
+            cardDiv.style.animation = 'none';
+            cardDiv.offsetHeight; // Trigger reflow
+            cardDiv.style.animation = '';
+            
+            // Show overlay
+            overlay.classList.add('active');
+            
+            // Hide after animation and call callback
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                if (callback) {
+                    callback();
+                }
+            }, 900);
+        }
+        
         // Show the start-of-turn choice UI - hand visible but locked until choice made
         function showTurnChoiceUI() {
             // Hand always visible but locked
@@ -2964,7 +3159,11 @@
             let drawBtn = document.getElementById('drawCardBtn');
             let gainBtn = document.getElementById('gainBudgetBtn');
             
-            // Disable draw if hand is full
+            // Update button labels to reflect new system
+            drawBtn.innerHTML = '🃏 Draw 1 Extra Card';
+            gainBtn.innerHTML = '💰 Gain +10 Budget';
+            
+            // Disable extra draw if hand is full (note: auto-draw already happened)
             drawBtn.disabled = (player.hand.length >= 6);
             gainBtn.disabled = false;
             
