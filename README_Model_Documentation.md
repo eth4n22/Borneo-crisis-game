@@ -7,6 +7,10 @@
 
 DDT Decision: Borneo Crisis is a turn-based systems-thinking policy game simulating the 1950s Borneo DDT spraying campaign. Players manage disease control across 12 turns (representing 24 months), making decisions that affect mosquitoes, cats, rats, malaria, and rat disease levels.
 
+**Version 2A Update:** Added housing/resource survival layer with Village Health, Roof Integrity, Grain Stores, and a new Repair Thatch action.
+
+**Version 2B Update:** Replaced direct action selection with card-based action economy system.
+
 ### Key Feedback Loops
 
 | Loop | Type | Description |
@@ -14,6 +18,8 @@ DDT Decision: Borneo Crisis is a turn-based systems-thinking policy game simulat
 | **B-Loop 1** | Balancing | DDT → mosquitoes ↓ → malaria ↓ |
 | **B-Loop 2** | Balancing | Cat Drop → cats ↑ → rats ↓ → rat disease ↓ |
 | **R-Loop** | Reinforcing | DDT → cats ↓ → rats ↑ → rat disease ↑ *(unintended!)* |
+| **B-Loop 3 (V2A)** | Balancing | Repair Thatch → roof ↑ → exposure ↓ → village health ↑ |
+| **R-Loop 2 (V2A)** | Reinforcing | Rats ↑ → grain ↓ → starvation ↑ → village health ↓ |
 
 ---
 
@@ -31,7 +37,10 @@ DDT Decision: Borneo Crisis is a turn-based systems-thinking policy game simulat
 | Deaths (Cumulative) | 0 |
 | Deaths This Turn | 0 |
 | Public Trust | 70 |
-| Budget | 100 |
+| **Budget** | **15** |
+| **Village Health (V2A)** | 100 |
+| **Roof Integrity (V2A)** | 80 |
+| **Grain Stores (V2A)** | 85 |
 
 ### Delay Queues (Initial)
 
@@ -40,7 +49,7 @@ DDT Decision: Borneo Crisis is a turn-based systems-thinking policy game simulat
 | Deaths Queue | `[0, 0]` (length: 2) |
 | DDT Ecology Queue | `[0, 0]` (length: 2) |
 | Cat Drop Queue | `[0]` (length: 1) |
-| Rat Control Queue | `[0]` (length: 1) |
+| Awareness Queue (V2A) | `[0]` (length: 1) |
 
 ---
 
@@ -53,10 +62,58 @@ DDT Decision: Borneo Crisis is a turn-based systems-thinking policy game simulat
 | Total Game Duration | 24 months |
 | Number of Players | 2-4 (configurable) |
 | Turns per Round | Equal to player count |
+| **Loss Condition (V2A)** | Village Health ≤ 0 or turn > 12 |
 
 ---
 
-## 3. Natural Dynamics (Each Turn)
+## 3. Card-Based Action System (Version 2B)
+
+The game now uses a card-based action economy system where players build a hand of action cards.
+
+### Turn Flow
+
+**Step 1 - Start of Turn:**
+- Budget grows by +5 + 10% interest (rounded up)
+- Hand is always visible
+
+**Step 2 - Choose One:**
+- **Draw a Card:** Add 1 random card to hand (if hand < 6)
+- **Add Budget:** Gain +10 budget immediately
+- Cannot do both - choose one per turn
+
+**Step 3 - Select Cards:**
+- Click cards in hand to select/deselect for play
+- Selected cards are highlighted green
+- Only affordable cards can be selected
+- Can select multiple cards to play in same turn
+
+**Step 4 - End Turn:**
+- Click "End Turn" to execute all selected cards
+- Budget is deducted for each card
+- Card effects are applied
+- Turn passes to next player
+
+### Card Types (7 types, equal probability)
+
+| Card | Cost | Effect |
+|------|------|--------|
+| Cat Drop | 15 | Cats +18, Rats -10, Trust +1 |
+| Spray DDT | 12 | Mosquitoes -18, DDT +20, Trust +2 |
+| Awareness | 10 | Trust +8, Malaria -3, Rat Disease -3 |
+| Repair Thatch | 8 | Roof +25, Trust +1 |
+| Protect Grain | 6 | Grain +15, Trust +1 |
+| Bonus Funding | 0 | Budget +15 |
+| Medical Aid | 0 | Malaria -8, Plague -8 |
+
+### Hand Rules
+- Maximum hand size: 6 cards
+- Starting hand: 2 cards
+- Starting budget: 15
+- Start-of-turn budget growth: +5 flat
+
+---
+
+## 4. Natural Dynamics (Each Turn)
 
 The following changes happen **automatically** every turn, before player actions:
 
@@ -80,28 +137,62 @@ Rat Disease → follows rats
     rat_disease_infected += floor((rats - rat_disease_infected) × 0.20)
 ```
 
+**Version 2A: Resource Dynamics**
+```
+Roof Integrity → degrades naturally
+    roof_integrity = max(0, min(100, roof_integrity - 2))
+
+Grain Stores → consumed + rat damage (V2A.1 adjusted)
+    grain_loss = 1 + floor(rats / 25)
+    grain_stores = max(0, min(100, grain_stores - grain_loss))
+```
+
 All variables are clamped after each turn:
 - Mosquitoes, DDT, Malaria, Rat Disease, Public Trust: clamped to **0-100**
+- Village Health, Roof Integrity, Grain Stores (V2A): clamped to **0-100**
 - Cats, Rats: **no longer clamped** - can grow beyond 100 based on game dynamics
 
 ---
 
-## 4. Deaths Calculation
+## 5. Village Health & Deaths (Version 2A)
 
-Deaths are delayed by 1 turn for realism:
+Village Health is now the primary survival metric, computed as a STOCK (not recalculated from 100 each turn):
 
 ```
-Immediate Deaths = floor(malaria × 0.10) + floor(rat_disease × 0.12)
+MALARIA HARM = floor(malaria_infected / 25)
+PLAGUE HARM = floor(rat_disease_infected / 20)
 
-Queue: push(immediate) → shift() → apply as deaths_this_turn
-Deaths Cumulative += deaths_this_turn
+STARVATION HARM (only when grain < 40):
+    = floor((40 - grain_stores) / 10) + 1
+    Examples: grain 39→1, grain 30→2, grain 20→3, grain 10→4
+
+EXPOSURE HARM (only when roof < 40):
+    = floor((40 - roof_integrity) / 12) + 1
+    Examples: roof 39→1, roof 28→2, roof 16→3
+
+RESILIENCE RECOVERY:
+    = 1 if public_trust >= 70, else 0
+
+VILLAGE HEALTH = previous_health - malaria_harm - plague_harm - starvation_harm - exposure_harm + resilience_recovery
+    (clamped to 0-100)
+
+DEATHS THIS TURN = malaria_harm + plague_harm + starvation_harm + exposure_harm
+DEATHS CUMULATIVE += deaths_this_turn
 ```
 
 ---
 
-## 5. Player Actions
+## 6. Player Actions
 
-### A) Spray DDT
+### A) Cat Drop
+| Effect | Value |
+|--------|-------|
+| Cost | 15 budget |
+| Trust | +1 |
+| Delayed (1 turn) | Cats +18 (or +9 if cats > 85) |
+| | Rats -10 |
+
+### B) Spray DDT
 | Effect | Value |
 |--------|-------|
 | Cost | 12 budget |
@@ -111,40 +202,37 @@ Deaths Cumulative += deaths_this_turn
 | Delayed (2 turns) | Push `floor(ddt/12) + 3` to ecology queue |
 | Repeated Use (3×) | Trust -8 |
 
-### B) Do Nothing
+### C) Awareness Campaign (V2A)
+| Effect | Value |
+|--------|-------|
+| Cost | 10 budget |
+| Trust | +8 |
+| Malaria | -3 immediate |
+| Rat Disease | -3 immediate |
+| Delayed (1 turn) | Mosquitoes -4, Rats -4 |
+
+### D) Repair Thatch (V2A)
+| Effect | Value |
+|--------|-------|
+| Cost | 8 budget |
+| Trust | +1 |
+| Roof Integrity | +25 immediate |
+| No delayed effects | - |
+
+### E) Protect Grain (V2A.1)
+| Effect | Value |
+|--------|-------|
+| Cost | 6 budget |
+| Trust | +1 |
+| Grain Stores | +15 immediate |
+| No delayed effects | - |
+
+### F) Do Nothing
 | Effect | Value |
 |--------|-------|
 | Cost | Free |
 | Trust | -3 |
 | Mosquitoes | +5 |
-
-### C) Cat Drop
-| Effect | Value |
-|--------|-------|
-| Cost | 15 budget |
-| Trust | +1 |
-| Delayed (1 turn) | Cats +18 (or +9 if cats > 85) |
-| | Rats -10 |
-
-### D) Rat Campaign
-| Effect | Value |
-|--------|-------|
-| Cost | 10 budget |
-| Trust | +1 |
-| Delayed (1 turn) | Rats -16 (or -6 if rats < 20) |
-| Side Effect | Cats -3 |
-| Side Effect | Trust -2 |
-
----
-
-## 6. Delay / Queue Logic
-
-| Queue | Length | What Gets Pushed | What Happens When Shifted |
-|-------|--------|------------------|--------------------------|
-| Deaths | 2 | Immediate deaths | Applied as deaths_this_turn |
-| DDT Ecology | 2 | floor(ddt/12) + 3 | cats -= hit; rats += floor(hit/2) |
-| Cat Drop | 1 | 18 (or 9 if cats > 85) | cats += actual; rats -= 10 |
-| Rat Control | 1 | 16 (or 6 if rats < 20) | rats -= actual; cats -= 3; trust -= 2 |
 
 ---
 
@@ -154,37 +242,29 @@ Deaths Cumulative += deaths_this_turn
 |-----------|--------|
 | Trust < 25 | Compliance = 0.7 (actions 30% less effective) |
 | Trust ≥ 25 | Compliance = 1.0 (full effectiveness) |
-| Budget < 0 | Budget = 0; Trust -= 10; Actions Disabled |
+| Budget < 0 | Budget = 0; Actions Disabled |
 | Budget ≥ 10 | Actions Re-enabled |
 | Deaths ≥ 5 | Trust -= floor(deaths / 3) |
 | Deaths < 5 | Trust += 2 |
+| **Trust ≥ 70 (V2A.1)** | Village Health +2 resilience recovery |
 
 ---
 
-## 8. Health Meter
+## 8. Village Health Meter (Version 2A)
 
-### Formula
-```
-Health = 100 
-  - (malaria × 0.4) 
-  - (rat_disease × 0.4) 
-  - (rats × 0.1) 
-  - (ddt × 0.1) 
-  - (deaths_this_turn × 2) 
-  + (trust × 0.2)
-```
+The health meter now displays **Village Health** as the primary survival metric.
 
-Note: Since rats can now exceed 100, the rats × 0.1 contribution is uncapped and can significantly impact health.
-
-Clamped to 0-100, rounded.
-
-### Thresholds
+### Thresholds (V2A)
 
 | Health Range | Label | Color |
 |--------------|-------|-------|
-| ≥ 70% | Healthy | 🟢 Green |
-| 30-69% | Strained | 🟠 Orange |
-| < 30% | Critical | 🔴 Red |
+| ≥ 70% | Thriving | 🟢 Green |
+| 40-69% | Struggling | 🟠 Orange |
+| < 40% | Collapsing! | 🔴 Red |
+
+### Game End Conditions
+- **Turn limit:** Player finishes after turn 12
+- **Collapse:** If Village Health ≤ 0, player is marked as collapsed
 
 ---
 
@@ -198,6 +278,8 @@ Clamped to 0-100, rounded.
 | Peak Infection | min(20, peak × 0.1) | -20 |
 | Duration | min(15, outbreak × 1.5) | -15 |
 | Eco Collapse | min(20, events × 5) | -20 |
+| **Roof Collapse (V2A)** | 5 if final_roof < 30 | -5 |
+| **Grain Collapse (V2A)** | 5 if final_grain < 30 | -5 |
 
 ### Bonuses
 
@@ -209,7 +291,9 @@ Clamped to 0-100, rounded.
 ### Final Score
 ```
 Score = max(0, min(100, 
-    100 - deaths_penalty - peak_penalty - duration_penalty - eco_penalty + trust_bonus + budget_bonus
+    100 - deaths_penalty - peak_penalty - duration_penalty - eco_penalty 
+    - roof_collapse_penalty - grain_collapse_penalty
+    + trust_bonus + budget_bonus
 ))
 ```
 
@@ -217,6 +301,7 @@ Score = max(0, min(100,
 1. Fewer deaths
 2. Lower peak infection
 3. Higher final trust
+4. **Higher final village health (V2A)**
 
 ---
 
@@ -254,9 +339,12 @@ Score = max(0, min(100,
 | Rats < 20 | Rat Campaign | Reduction limited to 6 |
 | DDT > 40 | Scandal Event | Trust -10 (vs -4) |
 | Trust < 25 | Any Action | 30% effectiveness reduction |
-| Budget < 0 | End of Turn | Budget=0, Trust-10, Actions Disabled |
+| Budget < 0 | End of Turn | Budget=0, Actions Disabled |
 | Consecutive DDT ≥ 3 | DDT Action | Trust -8 (fatigue) |
 | Malaria + Rat Disease > 60 | Each Turn | Counts toward outbreak duration |
+| **Grain < 40 (V2A)** | Each Turn | Starvation harm begins |
+| **Roof < 40 (V2A)** | Each Turn | Exposure harm begins |
+| **Village Health ≤ 0 (V2A)** | Each Turn | Player collapses |
 
 ---
 
@@ -270,4 +358,36 @@ Each occurrence:
 
 ---
 
-*Documentation generated from Borneo Crisis game code.*
+## 13. Version 2A / 2A.1: New Systems Summary
+
+### New Variables (V2A)
+- `village_health`: 0-100, starts at 100
+- `roof_integrity`: 0-100, starts at 80
+- `grain_stores`: 0-100, starts at 85 (V2A.1 changed from 75)
+
+### Grain Loss Formula (V2A.1 adjusted)
+- Changed from: `2 + floor(rats / 20)`
+- Changed to: `1 + floor(rats / 25)`
+
+### Resilience (V2A.1 buffed)
+- Changed from: +1 when trust >= 70
+- Changed to: +2 when trust >= 70
+
+### New Harm Pathways (V2A)
+- **Starvation**: When grain stores fall below 40
+- **Exposure**: When roof integrity falls below 40
+- **Resilience**: Small recovery (+1) when trust ≥ 70
+
+### New Action: Repair Thatch (V2A)
+- Cost: 8 budget
+- Effect: +25 roof integrity immediately
+- Trade-off: Budget spent can't be used for disease control
+
+### New Action: Protect Grain (V2A.1)
+- Cost: 6 budget
+- Effect: +15 grain immediately, +1 trust
+- Provides direct grain restoration
+
+---
+
+*Documentation generated from Borneo Crisis game code - Version 2A*

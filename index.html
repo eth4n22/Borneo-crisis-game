@@ -206,22 +206,47 @@
             align-items: center;
             gap: 10px;
             font-weight: bold;
+            color: #0f172a;
         }
         
         .action-guide-header.ddt-action {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
         }
         
         .action-guide-header.nothing-action {
             background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+            color: #fff;
         }
         
         .action-guide-header.cats-action {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
         }
         
         .action-guide-header.rat-action {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #fff;
+        }
+        
+        .action-guide-header.awareness-action {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+        
+        .action-guide-header.repair-action {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+        
+        .action-guide-header.grain-action {
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+        }
+        
+        .action-guide-header.medical-action {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+        
+        .action-guide-header.bonus-action {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
         }
         
         .action-icon {
@@ -731,18 +756,6 @@
             margin-bottom: 10px;
         }
         
-        .action-buttons {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-        
-        @media (max-width: 600px) {
-            .action-buttons {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
         .action-btn {
             padding: 10px 6px;
             border: none;
@@ -785,6 +798,8 @@
         .action-btn.nothing { background: linear-gradient(135deg, #636e72 0%, #2d3436 100%); color: white; }
         .action-btn.cats { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
         .action-btn.awareness { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+        .action-btn.repair { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: white; }
+        .action-btn.grain { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
         
         .action-btn:hover:not(:disabled) {
             transform: translateY(-2px);
@@ -810,6 +825,132 @@
         .advance-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* Card-based action system */
+        .turn-choice-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .choice-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .choice-btn:hover:not(:disabled) {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .choice-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .card-play-container {
+            margin-bottom: 15px;
+        }
+        
+        .hand-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .card-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 15px;
+            border: 2px solid #9b59b6;
+            border-radius: 8px;
+            background: rgba(155, 89, 182, 0.2);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 100px;
+        }
+        
+        .card-btn:hover:not(:disabled) {
+            background: rgba(155, 89, 182, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .card-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: #666;
+        }
+        
+        .card-btn.selected {
+            border-color: #2ed573;
+            background: rgba(46, 213, 115, 0.3);
+            box-shadow: 0 0 10px rgba(46, 213, 115, 0.5);
+        }
+        
+        .card-btn.selected .card-cost {
+            color: #2ed573;
+        }
+        
+        .card-btn.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .card-btn.unaffordable {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: #666;
+        }
+        
+        .card-btn .card-icon {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+        
+        .card-btn .card-name {
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .card-btn .card-cost {
+            font-size: 0.65rem;
+            color: #aaa;
+        }
+        
+        .end-turn-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: 2px solid #e74c3c;
+            border-radius: 8px;
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .end-turn-btn:hover {
+            background: rgba(231, 76, 60, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .hand-size {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 10px;
         }
         
         /* Event log */
@@ -1027,153 +1168,222 @@
                 <a href="#" onclick="showScreen('startScreen'); return false;" style="color: #00d4ff; text-decoration: underline; font-size: 0.95rem; font-weight: bold;">← Back to Start</a>
             </div>
             
-            <!-- LAYER 1: SIMPLE PLAYER GUIDE -->
+            <!-- A. OBJECTIVE -->
             <div class="howto-section">
-                <h3>🎯 Objective</h3>
-                <p>Get the highest score (0-100) by controlling disease while keeping the ecosystem balanced. You have 12 turns — make them count!</p>
+                <h3>🎯 A. Objective</h3>
+                <p>Your goal is to get the highest score (0–100) by managing disease control while protecting your village. You have <strong>12 turns</strong> — make each one count!</p>
+                <p>Balance is essential: disease, ecosystem, housing, food supply, budget, and community trust all affect your final score.</p>
             </div>
             
+            <!-- B. TURN STRUCTURE -->
             <div class="howto-section">
-                <h3>🔄 How the Game Works</h3>
-                <ul>
-                    <li><strong>2–4 players</strong> take turns in round-robin style</li>
-                    <li>Each turn represents <strong>2 months</strong> (12 turns = 2 years total)</li>
-                    <li>Choose <strong>ONE action</strong> per turn</li>
-                    <li>Your decisions affect disease, animals, trust, and budget</li>
+                <h3>🔄 B. Turn Structure</h3>
+                <p>Every turn follows this simple flow:</p>
+                <ol style="margin-left: 20px; line-height: 2;">
+                    <li><strong>Start of Turn:</strong> You automatically receive <strong>+5 budget</strong>.</li>
+                    <li><strong>Choose One:</strong> Either <em>Draw 1 Card</em> to add a new action to your hand, OR take <em>+10 Budget</em> right now. (You cannot do both.)</li>
+                    <li><strong>Play Cards:</strong> Click any cards in your hand to select them. Selected cards are queued to play.</li>
+                    <li><strong>End Turn:</strong> Press End Turn to execute all selected cards and pass play to the next player.</li>
+                </ol>
+                <p style="margin-top: 12px;">You start with <strong>2 cards</strong> and can hold up to <strong>6 cards</strong>. Most cards cost budget to play.</p>
+            </div>
+            
+            <!-- C. WHAT YOU ARE MANAGING -->
+            <div class="howto-section">
+                <h3>🏘️ C. What You Are Managing</h3>
+                <p>These are the key variables in the game:</p>
+                <ul style="line-height: 1.9; margin-top: 10px;">
+                    <li><strong>Village Health</strong> — Your main survival metric. If it reaches 0, your village collapses.</li>
+                    <li><strong>Mosquitoes</strong> — Drive malaria risk. More mosquitoes = more disease.</li>
+                    <li><strong>Malaria</strong> — Directly harms village health based on infection levels.</li>
+                    <li><strong>Rats</strong> — Spread plague AND eat your grain. Too many rats is dangerous.</li>
+                    <li><strong>Plague (Rat Disease)</strong> — Directly harms village health based on infection levels.</li>
+                    <li><strong>Cats</strong> — Naturally control rat populations. More cats = fewer rats.</li>
+                    <li><strong>DDT</strong> — Kills mosquitoes but can harm the ecosystem over time.</li>
+                    <li><strong>Roof Integrity</strong> — Low roofs cause exposure harm to village health.</li>
+                    <li><strong>Grain Stores</strong> — Low grain causes starvation harm to village health.</li>
+                    <li><strong>Public Trust</strong> — High trust (70+) gives a resilience bonus. Low trust weakens your actions.</li>
+                    <li><strong>Budget</strong> — Required to play most cards. Manage it carefully!</li>
                 </ul>
             </div>
             
+            <!-- D. THE CARDS -->
             <div class="howto-section">
-                <h3>🎮 Your Four Actions</h3>
+                <h3>🎴 D. The Cards</h3>
+                <p>Here are all the cards you can draw and play:</p>
                 
+                <!-- Spray DDT -->
                 <div class="action-guide-card">
                     <div class="action-guide-header ddt-action">
                         <span class="action-icon">💧</span>
-                        <span class="action-name">A) Spray DDT</span>
-                        <span class="action-cost">Cost: 12</span>
+                        <span class="action-name">Spray DDT — Cost: 12</span>
                     </div>
                     <div class="action-guide-body">
-                        <p><strong>Kills mosquitoes quickly</strong> and reduces malaria. But beware — it also harms cats, which can cause rats to multiply and spread more disease later.</p>
-                        <p class="action-warning">⚠️ Effects are delayed by 2 turns</p>
+                        <p><strong>Primary Effect:</strong> Instantly reduces mosquitoes and adds DDT to the ecosystem.</p>
+                        <p><strong>Trade-off:</strong> High DDT levels can harm cat populations, which may cause rat populations to explode later.</p>
+                        <p><strong>Delay:</strong> Ecological effects appear after 2 turns.</p>
+                        <p><strong>Value:</strong> Fast, powerful disease control — but use sparingly to avoid ecological backlash.</p>
                     </div>
                 </div>
                 
-                <div class="action-guide-card">
-                    <div class="action-guide-header nothing-action">
-                        <span class="action-icon">⏸️</span>
-                        <span class="action-name">B) Do Nothing</span>
-                        <span class="action-cost">Cost: Free</span>
-                    </div>
-                    <div class="action-guide-body">
-                        <p>Saves your budget, but mosquitoes will breed and disease may spread. Your trust with the community also drops slightly.</p>
-                    </div>
-                </div>
-                
+                <!-- Cat Drop -->
                 <div class="action-guide-card">
                     <div class="action-guide-header cats-action">
                         <span class="action-icon">🐱</span>
-                        <span class="action-name">C) Cat Drop</span>
-                        <span class="action-cost">Cost: 15</span>
+                        <span class="action-name">Cat Drop — Cost: 15</span>
                     </div>
                     <div class="action-guide-body">
-                        <p><strong>Restores cat populations</strong> to hunt rats. More cats = fewer rats = less disease. But it's expensive!</p>
-                        <p class="action-warning">⚠️ Effects are delayed by 1 turn</p>
+                        <p><strong>Primary Effect:</strong> Adds cats to the ecosystem to hunt rats.</p>
+                        <p><strong>Trade-off:</strong> High cost. Effects are delayed by 1 turn.</p>
+                        <p><strong>Value:</strong> Effective long-term rat control. Helps prevent plague and protects grain.</p>
                     </div>
                 </div>
                 
+                <!-- Awareness Campaign -->
                 <div class="action-guide-card">
-                    <div class="action-guide-header rat-action">
-                        <span class="action-icon">🐀</span>
-                        <span class="action-name">D) Rat Campaign</span>
-                        <span class="action-cost">Cost: 10</span>
+                    <div class="action-guide-header awareness-action">
+                        <span class="action-icon">📢</span>
+                        <span class="action-name">Awareness Campaign — Cost: 10</span>
                     </div>
                     <div class="action-guide-body">
-                        <p><strong>Quickly reduces rat population</strong> and disease. However, it may accidentally harm some cats too.</p>
-                        <p class="action-warning">⚠️ Effects are delayed by 1 turn</p>
+                        <p><strong>Primary Effect:</strong> Greatly boosts public trust and provides immediate reductions to both malaria and plague.</p>
+                        <p><strong>Trade-off:</strong> Also reduces mosquitoes and rats after 1 turn delay.</p>
+                        <p><strong>Value:</strong> A solid all-around choice that improves trust and reduces disease pressure.</p>
+                    </div>
+                </div>
+                
+                <!-- Repair Thatch -->
+                <div class="action-guide-card">
+                    <div class="action-guide-header repair-action">
+                        <span class="action-icon">🏚️</span>
+                        <span class="action-name">Repair Thatch — Cost: 8</span>
+                    </div>
+                    <div class="action-guide-body">
+                        <p><strong>Primary Effect:</strong> Instantly improves roof integrity.</p>
+                        <p><strong>Trade-off:</strong> Does not affect disease directly.</p>
+                        <p><strong>Value:</strong> Essential for protecting against exposure harm. No delay — immediate results.</p>
+                    </div>
+                </div>
+                
+                <!-- Protect Grain -->
+                <div class="action-guide-card">
+                    <div class="action-guide-header grain-action">
+                        <span class="action-icon">🌾</span>
+                        <span class="action-name">Protect Grain — Cost: 6</span>
+                    </div>
+                    <div class="action-guide-body">
+                        <p><strong>Primary Effect:</strong> Instantly adds grain stores.</p>
+                        <p><strong>Trade-off:</strong> Does not affect disease directly.</p>
+                        <p><strong>Value:</strong> One of the more affordable cards. Great for preventing starvation harm.</p>
+                    </div>
+                </div>
+                
+                <!-- Medical Aid -->
+                <div class="action-guide-card">
+                    <div class="action-guide-header medical-action">
+                        <span class="action-icon">🏥</span>
+                        <span class="action-name">Medical Aid — Cost: 5</span>
+                    </div>
+                    <div class="action-guide-body">
+                        <p><strong>Primary Effect:</strong> Instantly reduces both malaria and plague pressure.</p>
+                        <p><strong>Trade-off:</strong> Lower cost means lower immediate impact than some options.</p>
+                        <p><strong>Value:</strong> Affordable immediate relief from disease pressure.</p>
+                    </div>
+                </div>
+                
+                <!-- Bonus Funding -->
+                <div class="action-guide-card">
+                    <div class="action-guide-header bonus-action">
+                        <span class="action-icon">💰</span>
+                        <span class="action-name">Bonus Funding — Cost: Free</span>
+                    </div>
+                    <div class="action-guide-body">
+                        <p><strong>Primary Effect:</strong> Instantly adds +15 to your budget.</p>
+                        <p><strong>Trade-off:</strong> Appears less frequently than other cards.</p>
+                        <p><strong>Value:</strong> Free budget boost — especially useful when you need funds for expensive cards.</p>
                     </div>
                 </div>
             </div>
             
+            <!-- E. DELAYED EFFECTS & STRATEGY -->
             <div class="howto-section">
-                <h3>⚠️ What to Watch Out For</h3>
-                <ul>
-                    <li><strong>Delayed Effects:</strong> Actions don't work immediately. DDT takes 2 turns to show ecological impact.</li>
-                    <li><strong>Balance is Key:</strong> Overusing one action creates problems. DDT kills cats → rats explode → disease surges!</li>
-                    <li><strong>Trust Matters:</strong> If trust drops below 25, your actions become 30% less effective.</li>
-                    <li><strong>Budget Limits:</strong> If budget goes negative, you can't afford paid actions until you recover to 10+.</li>
-                    <li><strong>Eco Collapse:</strong> If cats drop below 20 AND rats exceed 80, it's ecological collapse — major score penalty!</li>
+                <h3>⏱️ E. Delayed Effects & Strategy</h3>
+                <ul style="line-height: 1.9;">
+                    <li><strong>Plan Ahead:</strong> Many card effects don't happen immediately. DDT takes 2 turns; cat drops take 1 turn.</li>
+                    <li><strong>Balance Everything:</strong> Overusing one option causes problems. DDT kills mosquitoes but harms cats → rats multiply → more disease!</li>
+                    <li><strong>Roof & Grain Are Vital:</strong> Disease isn't the only threat. Low roofs cause exposure harm. Low grain causes starvation harm.</li>
+                    <li><strong>Trust Matters:</strong> At 70+ trust, your village gets a +1 health recovery each turn.</li>
+                    <li><strong>Choose Your Start:</strong> Sometimes drawing a card is better; sometimes +10 budget helps more. Watch your resources!</li>
+                </ul>
+                <p style="margin-top: 10px; text-align: center; color: #888;">💡 <em>Quick Loop: DDT → fewer mosquitoes → but may → fewer cats → more rats → more plague + grain loss → village hurt!</em></p>
+            </div>
+            
+            <!-- F. WINNING THE GAME -->
+            <div class="howto-section">
+                <h3>🏆 F. Winning the Game</h3>
+                <p>Your final score (0–100) comes from bonuses and penalties:</p>
+                <ul style="line-height: 1.9; margin-top: 10px;">
+                    <li><strong>Deaths:</strong> Keep them low — this is the biggest factor (max +60 bonus)</li>
+                    <li><strong>Infection Peak:</strong> Lower peak infections earn points (max +20)</li>
+                    <li><strong>Outbreak Duration:</strong> Shorter outbreaks score better (max +15)</li>
+                    <li><strong>Ecological Balance:</strong> Avoid eco collapse (cats &lt;20 AND rats &gt;80) for +20</li>
+                    <li><strong>Trust & Budget:</strong> Small end-game bonuses for high trust and budget</li>
+                    <li><strong>Housing & Food:</strong> Keep final roof and grain above 30 for +5 each</li>
                 </ul>
             </div>
             
-            <div class="howto-section">
-                <h3>🏆 Winning Tips</h3>
-                <ul>
-                    <li><strong>Lower deaths</strong> — biggest factor in your score</li>
-                    <li><strong>Keep disease under control</strong> — don't let infections peak</li>
-                    <li><strong>Avoid ecological collapse</strong> — maintain cat/rat balance</li>
-                    <li><strong>Preserve trust and budget</strong> — they give bonus points</li>
-                    <li><strong>Think ahead</strong> — remember delayed effects!</li>
-                </ul>
-            </div>
-            
-            <!-- Visual Feedback Loop Diagram -->
-            <div class="howto-section feedback-loop">
-                <h3>🔄 The Core Problem (Why It's Hard)</h3>
-                <p style="text-align: center; margin-bottom: 15px;">The classic dilemma:</p>
-                <div class="loop-diagram">
-                    <div class="loop-arrow">DDT ↑</div>
-                    <div class="loop-arrow">↓</div>
-                    <div class="loop-arrow">Cats ↓</div>
-                    <div class="loop-arrow">↓</div>
-                    <div class="loop-arrow">Rats ↑↑</div>
-                    <div class="loop-arrow">↓</div>
-                    <div class="loop-arrow warning">Disease ↑↑</div>
-                </div>
-                <p style="text-align: center; margin-top: 15px; color: #aaa;"><em>Using DDT to fight malaria accidentally causes more disease!</em></p>
-            </div>
-            
-            <!-- LAYER 2: ADVANCED DETAILS (Collapsible) -->
+            <!-- G. ADVANCED DETAILS (Collapsible) -->
             <div class="howto-section collapsible-section">
                 <h3 onclick="toggleAdvancedDetails()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                    <span>📊 Advanced Rules & Exact Values</span>
+                    <span>📊 G. Advanced Details</span>
                     <span id="advancedToggleIcon" style="font-size: 1.2rem;">▼</span>
                 </h3>
                 <div id="advancedDetails" class="advanced-content" style="display: none;">
                     
                     <div class="howto-subsection">
-                        <h4>🎯 Scoring Formula</h4>
-                        <div class="score-formula">
-                            <p><strong>Score = 100</strong></p>
-                            <p>− Deaths penalty: deaths × 0.6 (max −60)</p>
-                            <p>− Peak penalty: peak_infection × 0.1 (max −20)</p>
-                            <p>− Duration penalty: outbreak_turns × 1.5 (max −15)</p>
-                            <p>− Eco penalty: eco_collapse × 5 (max −20)</p>
-                            <p>+ Trust bonus: floor(trust/10) (max +10)</p>
-                            <p>+ Budget bonus: floor(budget/20) (max +5)</p>
-                        </div>
-                    </div>
-                    
-                    <div class="howto-subsection">
-                        <h4>📋 Exact Action Values</h4>
+                        <h4>🎴 Exact Card Values</h4>
                         <table class="howto-table">
-                            <tr><th>Action</th><th>Cost</th><th>Exact Effects</th></tr>
+                            <tr><th>Card</th><th>Cost</th><th>Effects</th></tr>
                             <tr><td>Spray DDT</td><td>12</td><td>Mosquitoes −18, DDT +20, Trust +2</td></tr>
-                            <tr><td>Do Nothing</td><td>0</td><td>Mosquitoes +5, Trust −3</td></tr>
-                            <tr><td>Cat Drop</td><td>15</td><td>Cats +18 (or +9 if cats &gt;85), Rats −10</td></tr>
-                            <tr><td>Rat Campaign</td><td>10</td><td>Rats −16 (or −6 if rats &lt;20), Cats −3</td></tr>
+                            <tr><td>Cat Drop</td><td>15</td><td>Cats +18 (or +9 if cats &gt;85), Rats −10, Trust +1</td></tr>
+                            <tr><td>Awareness</td><td>10</td><td>Trust +8, Malaria −3, Rat Disease −3</td></tr>
+                            <tr><td>Repair Thatch</td><td>8</td><td>Roof +25, Trust +1</td></tr>
+                            <tr><td>Protect Grain</td><td>6</td><td>Grain +15, Trust +1</td></tr>
+                            <tr><td>Medical Aid</td><td>5</td><td>Malaria −8, Plague −8</td></tr>
+                            <tr><td>Bonus Funding</td><td>0</td><td>Budget +15</td></tr>
                         </table>
                     </div>
                     
                     <div class="howto-subsection">
-                        <h4>⚡ Random Events</h4>
+                        <h4>💰 Budget System</h4>
+                        <ul>
+                            <li><strong>Starting Budget:</strong> 15</li>
+                            <li><strong>Turn Growth:</strong> +5 flat at start of each turn</li>
+                            <li><strong>Draw Option:</strong> Add random card to hand (max 6)</li>
+                            <li><strong>Budget Option:</strong> +10 immediate</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="howto-subsection">
+                        <h4>⚠️ Harm Thresholds</h4>
+                        <ul>
+                            <li><strong>Starvation:</strong> Only when grain &lt; 40. Formula: floor((40 - grain) / 10) + 1</li>
+                            <li><strong>Exposure:</strong> Only when roof &lt; 40. Formula: floor((40 - roof) / 12) + 1</li>
+                            <li><strong>Malaria Harm:</strong> floor(malaria_infected / 25)</li>
+                            <li><strong>Plague Harm:</strong> floor(rat_disease_infected / 20)</li>
+                            <li><strong>Resilience:</strong> +1 health recovery if trust ≥ 70</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="howto-subsection">
+                        <h4>🎲 Random Events</h4>
                         <table class="howto-table">
                             <tr><th>Event</th><th>Chance</th><th>Effects</th></tr>
                             <tr><td>🌧️ Monsoon</td><td>10%</td><td>Mosquitoes +15, Malaria +5, Trust −2</td></tr>
                             <tr><td>🐀 Rodent Migration</td><td>6%</td><td>Rats +20, Rat Disease +5, Cats −3</td></tr>
-                            <tr><td>📰 DDT Scandal</td><td>5%</td><td>Trust −10 (if DDT&gt;40), else −4</td></tr>
+                            <tr><td>📰 DDT Scandal</td><td>5%</td><td>Trust −10 (if DDT &gt;40), else −4</td></tr>
                             <tr><td>🧹 Clean-Up</td><td>5%</td><td>Rats −10, Rat Disease −5, Trust +6</td></tr>
-                            <tr><td>🐱 Cat Disease</td><td>4%</td><td>Cats −15, Rats +8, Trust −3</td></tr>
-                            <tr><td>🏥 WHO Funding</td><td>~4%</td><td>Budget +25, Trust +3 (guaranteed once)</td></tr>
+                            <tr><td>🏥 WHO Funding</td><td>~20%</td><td>Budget +25, Trust +3 (guaranteed once, rounds 7-9)</td></tr>
                         </table>
                     </div>
                     
@@ -1181,10 +1391,10 @@
                         <h4>🔧 Technical Details</h4>
                         <ul>
                             <li><strong>Trust Threshold:</strong> Below 25 = 70% action effectiveness</li>
-                            <li><strong>Budget Threshold:</strong> Below 0 = actions disabled until ≥10</li>
+                            <li><strong>Trust Resilience:</strong> 70+ trust = +1 health recovery each turn</li>
+                            <li><strong>Eco Collapse:</strong> Cats &lt; 20 AND Rats &gt; 80 = −20 score penalty</li>
+                            <li><strong>Delay Times:</strong> DDT = 2 turns, Cat/Rat/Awareness = 1 turn</li>
                             <li><strong>DDT Fatigue:</strong> Using DDT 3× in a row = −8 trust</li>
-                            <li><strong>Eco Collapse:</strong> Cats &lt; 20 AND Rats &gt; 80</li>
-                            <li><strong>Delay Times:</strong> DDT harm = 2 turns, Cat/Rat = 1 turn</li>
                         </ul>
                     </div>
                     
@@ -1301,16 +1511,28 @@
                                 <span class="stat-label">Rat Disease:</span>
                                 <span class="stat-value danger" id="ratDiseaseDisplay">10</span>
                             </div>
+                            <div class="stat-row">
+                                <span class="stat-label">🏠 Village:</span>
+                                <span class="stat-value" id="villageHealthDisplay">100</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">🏚️ Roof:</span>
+                                <span class="stat-value" id="roofDisplay">80</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">🌾 Grain:</span>
+                                <span class="stat-value" id="grainDisplay">85</span>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Health Meter -->
                     <div class="card">
-                        <h2>❤️ Health Status</h2>
+                        <h2>🏠 Village Health</h2>
                         <div class="health-meter">
                             <div class="health-label">
                                 <span id="healthPercent">100%</span>
-                                <span id="healthValue">Healthy</span>
+                                <span id="healthValue">Thriving</span>
                             </div>
                             <div class="health-bar-container">
                                 <div class="health-bar green" id="healthBar" style="width: 100%;"></div>
@@ -1330,22 +1552,24 @@
                             ⚠️ Budget depleted! Actions disabled.
                         </div>
                         
-                        <div class="action-buttons">
-                            <button class="action-btn cats" onclick="applyAction('cats')">
-                                A) Cat Drop
-                                <span class="cost">Cost: 15</span>
+                        <!-- Card-based action system UI - Hand always visible -->
+                        <div id="cardPlayContainer" class="card-play-container">
+                            <div class="hand-size">Your Hand (<span id="handCount">0</span>/6):</div>
+                            <div id="handCards" class="hand-cards"></div>
+                        </div>
+                        
+                        <div id="turnChoiceContainer" class="turn-choice-container" style="display: none;">
+                            <button id="drawCardBtn" class="choice-btn" onclick="chooseDrawCard()">
+                                🃏 Draw 1 Card
                             </button>
-                            <button class="action-btn ddt" onclick="applyAction('ddt')">
-                                B) Spray DDT
-                                <span class="cost">Cost: 12</span>
+                            <button id="gainBudgetBtn" class="choice-btn" onclick="chooseGainBudget()">
+                                💰 Gain +10 Budget
                             </button>
-                            <button class="action-btn awareness" onclick="applyAction('awareness')">
-                                C) Awareness Campaign
-                                <span class="cost">Cost: 10</span>
-                            </button>
-                            <button class="action-btn nothing" onclick="applyAction('nothing')">
-                                D) Do Nothing
-                                <span class="cost">Cost: Free</span>
+                        </div>
+                        
+                        <div id="endTurnContainer" class="end-turn-container" style="display: none;">
+                            <button id="endTurnBtn" class="end-turn-btn" onclick="endTurnFlow()">
+                                ⏭️ End Turn
                             </button>
                         </div>
                         
@@ -1390,6 +1614,8 @@
                         <th>Eco</th>
                         <th>Trust</th>
                         <th>Budget</th>
+                        <th>Roof</th>
+                        <th>Grain</th>
                     </tr>
                 </thead>
                 <tbody id="resultsBody"></tbody>
@@ -1422,6 +1648,25 @@
                 <canvas id="deathsChart"></canvas>
             </div>
             
+            <!-- Version 2A: New Charts -->
+            <div class="chart-section">
+                <h3>📈 Village Health Over Time</h3>
+                <div class="player-chart-select">
+                    <select id="villagePlayerSelect" onchange="updateVillageChart()"></select>
+                    <button class="btn-compare" onclick="toggleCompareVillage()">Compare All Players</button>
+                </div>
+                <canvas id="villageChart"></canvas>
+            </div>
+            
+            <div class="chart-section">
+                <h3>📈 Roof & Grain Over Time</h3>
+                <div class="player-chart-select">
+                    <select id="resourcePlayerSelect" onchange="updateResourceChart()"></select>
+                    <button class="btn-compare" onclick="toggleCompareResource()">Compare All Players</button>
+                </div>
+                <canvas id="resourceChart"></canvas>
+            </div>
+            
             <div class="export-section">
                 <button class="btn btn-export" onclick="exportAllCSV()">📥 Export CSV</button>
                 <button class="btn btn-restart" onclick="restartGame()">🔄 Play Again</button>
@@ -1445,7 +1690,12 @@
                 this.deaths_cumulative = 0;
                 this.deaths_this_turn = 0;
                 this.public_trust = 70;
-                this.budget = 100;
+                this.budget = 15;
+                
+                // Card system
+                this.hand = [];
+                this.selectedCards = []; // Cards selected for play this turn
+                this.startOfTurnChoiceMade = false; // track if draw/+10 choice made
                 
                 // Delay queues
                 this.deaths_queue = [0, 0];
@@ -1453,6 +1703,17 @@
                 this.cat_drop_queue = [0];
                 this.rat_control_queue = [0];
                 this.awareness_queue = [0]; // For awareness campaign delayed effects
+                
+                // Version 2A: Housing & Resource variables
+                this.village_health = 100;
+                this.roof_integrity = 80;
+                this.grain_stores = 85;
+                
+                // Internal harm tracking (for logging)
+                this.malaria_harm = 0;
+                this.plague_harm = 0;
+                this.starvation_harm = 0;
+                this.exposure_harm = 0;
                 
                 // Action tracking
                 this.consecutive_ddt_uses = 0;
@@ -1464,7 +1725,8 @@
                     turn: [], mosquitoes: [], ddt: [], cats: [], rats: [],
                     malaria_infected: [], rat_disease_infected: [],
                     deaths_this_turn: [], deaths_cumulative: [],
-                    public_trust: [], budget: []
+                    public_trust: [], budget: [],
+                    village_health: [], roof_integrity: [], grain_stores: []
                 };
                 
                 this.actionHistory = [];
@@ -1483,6 +1745,9 @@
                 this.dataLog.deaths_cumulative.push(this.deaths_cumulative);
                 this.dataLog.public_trust.push(this.public_trust);
                 this.dataLog.budget.push(this.budget);
+                this.dataLog.village_health.push(this.village_health);
+                this.dataLog.roof_integrity.push(this.roof_integrity);
+                this.dataLog.grain_stores.push(this.grain_stores);
             }
             
             clamp() {
@@ -1496,6 +1761,10 @@
                 this.rat_disease_infected = Math.max(0, Math.min(100, this.rat_disease_infected));
                 this.public_trust = Math.max(0, Math.min(100, this.public_trust));
                 this.budget = Math.max(0, this.budget);
+                // Version 2A: Clamp new variables
+                this.village_health = Math.max(0, Math.min(100, this.village_health));
+                this.roof_integrity = Math.max(0, Math.min(100, this.roof_integrity));
+                this.grain_stores = Math.max(0, Math.min(100, this.grain_stores));
             }
             
             applyNaturalDynamics() {
@@ -1505,6 +1774,13 @@
                 this.rats += 4 + Math.floor((50 - this.cats) / 20);
                 this.malaria_infected += Math.floor((this.mosquitoes - this.malaria_infected) * 0.25);
                 this.rat_disease_infected += Math.floor((this.rats - this.rat_disease_infected) * 0.20);
+                
+                // Version 2A: Roof Integrity - degrades by 2 each turn
+                this.roof_integrity = Math.max(0, Math.min(100, this.roof_integrity - 2));
+                
+                // Version 2A: Grain Stores - consumed + rat damage
+                let grain_loss = 1 + Math.floor(this.rats / 25);
+                this.grain_stores = Math.max(0, Math.min(100, this.grain_stores - grain_loss));
             }
             
             applyDelayedEffects(effectsLog) {
@@ -1542,10 +1818,172 @@
                 }
             }
             
+            // ==================== CARD SYSTEM ====================
+            
+            // Card draw with weighted probabilities
+            // Normal action cards: cats, ddt, awareness, repair, grain, medical_aid (equal weight)
+            // Bonus Funding: less frequent
+            drawCard() {
+                // Weighted deck: 6 normal cards each appear 3 times, bonus_funding appears 1 time
+                // Total: 19 cards in deck
+                const cardDeck = [
+                    'cats', 'cats', 'cats',
+                    'ddt', 'ddt', 'ddt',
+                    'awareness', 'awareness', 'awareness',
+                    'repair', 'repair', 'repair',
+                    'grain', 'grain', 'grain',
+                    'medical_aid', 'medical_aid', 'medical_aid',
+                    'bonus_funding'
+                ];
+                const randomIndex = Math.floor(Math.random() * cardDeck.length);
+                const drawnCard = cardDeck[randomIndex];
+                this.hand.push(drawnCard);
+                return drawnCard;
+            }
+            
+            getCardCost(cardType) {
+                const costs = {
+                    'cats': 15,
+                    'ddt': 12,
+                    'awareness': 10,
+                    'repair': 8,
+                    'grain': 6,
+                    'bonus_funding': 0,
+                    'medical_aid': 5
+                };
+                return costs[cardType] || 0;
+            }
+            
+            canPlayCard(cardType) {
+                const cost = this.getCardCost(cardType);
+                return this.hand.includes(cardType) && this.budget >= cost;
+            }
+            
+            playCard(cardType, cardIndex, effectsLog) {
+                // Remove card from hand by index, not by type
+                if (cardIndex !== undefined && cardIndex >= 0 && cardIndex < this.hand.length) {
+                    this.hand.splice(cardIndex, 1);
+                } else {
+                    // Fallback: try to find by type (for backward compatibility)
+                    const cardIdx = this.hand.indexOf(cardType);
+                    if (cardIdx > -1) {
+                        this.hand.splice(cardIdx, 1);
+                    }
+                }
+                
+                const compliance = this.public_trust < 25 ? 0.7 : 1.0;
+                
+                switch(cardType) {
+                    case 'cats':
+                        let cost = 15;
+                        this.budget -= cost;
+                        this.total_cat_drops++;
+                        this.public_trust += 1;
+                        this.consecutive_ddt_uses = 0;
+                        let increase = this.cats > 85 ? 9 : 18;
+                        this.cat_drop_queue.push(increase);
+                        effectsLog.push(`Cat Drop: +${increase} (cost ${cost})`);
+                        break;
+                        
+                    case 'ddt':
+                        let costDdt = 12;
+                        this.budget -= costDdt;
+                        let mosqRed = Math.floor(18 * compliance);
+                        this.mosquitoes -= mosqRed;
+                        this.ddt += 20;
+                        this.public_trust += 2;
+                        this.consecutive_ddt_uses++;
+                        let ecology = Math.floor(this.ddt / 12) + 3;
+                        this.ddt_ecology_queue.push(ecology);
+                        effectsLog.push(`Spray DDT: Mosq -${mosqRed}, DDT +20`);
+                        if (this.consecutive_ddt_uses >= 3) {
+                            this.public_trust -= 8;
+                            effectsLog.push(`DDT fatigue: Trust -8`);
+                        }
+                        break;
+                        
+                    case 'awareness':
+                        this.budget -= 10;
+                        this.public_trust += 8;
+                        this.malaria_infected = Math.max(0, this.malaria_infected - 3);
+                        this.rat_disease_infected = Math.max(0, this.rat_disease_infected - 3);
+                        this.consecutive_ddt_uses = 0;
+                        this.awareness_queue.push(4);
+                        effectsLog.push(`Awareness: Trust +8, Disease -3 immediate, -4 delayed`);
+                        break;
+                        
+                    case 'repair':
+                        this.budget -= 8;
+                        this.roof_integrity = Math.min(100, this.roof_integrity + 25);
+                        this.public_trust += 1;
+                        this.consecutive_ddt_uses = 0;
+                        effectsLog.push(`Repair Thatch: Roof +25, Trust +1`);
+                        break;
+                        
+                    case 'grain':
+                        this.budget -= 6;
+                        this.grain_stores = Math.min(100, this.grain_stores + 15);
+                        this.public_trust += 1;
+                        this.consecutive_ddt_uses = 0;
+                        effectsLog.push(`Protect Grain: Grain +15, Trust +1`);
+                        break;
+                        
+                    case 'bonus_funding':
+                        this.budget += 15;
+                        effectsLog.push(`Bonus Funding: Budget +15`);
+                        break;
+                        
+                    case 'medical_aid':
+                        this.budget -= 5;
+                        this.malaria_infected = Math.max(0, this.malaria_infected - 8);
+                        this.rat_disease_infected = Math.max(0, this.rat_disease_infected - 8);
+                        effectsLog.push(`Medical Aid: Malaria -8, Plague -8`);
+                        break;
+                }
+            }
+            
+            applyStartOfTurnBudgetGrowth() {
+                // Add flat +5 (no interest)
+                this.budget += 5;
+                return 5;
+            }
+            
+            // ==================== END CARD SYSTEM ====================
+            
             computeDeaths() {
-                let immediate = Math.floor(this.malaria_infected * 0.10) + Math.floor(this.rat_disease_infected * 0.12);
-                this.deaths_queue.push(immediate);
-                this.deaths_this_turn = this.deaths_queue.shift() || 0;
+                // Version 2A: Compute harm values
+                this.malaria_harm = Math.floor(this.malaria_infected / 25);
+                this.plague_harm = Math.floor(this.rat_disease_infected / 20);
+                
+                // Starvation harm - only when grain < 40
+                if (this.grain_stores < 40) {
+                    this.starvation_harm = Math.floor((40 - this.grain_stores) / 10) + 1;
+                } else {
+                    this.starvation_harm = 0;
+                }
+                
+                // Exposure harm - only when roof < 40
+                if (this.roof_integrity < 40) {
+                    this.exposure_harm = Math.floor((40 - this.roof_integrity) / 12) + 1;
+                } else {
+                    this.exposure_harm = 0;
+                }
+                
+                // Resilience recovery based on trust
+                let resilience_recovery = (this.public_trust >= 70) ? 2 : 0;
+                
+                // Update village health as a stock (from previous value)
+                this.village_health = Math.max(0, Math.min(100,
+                    this.village_health 
+                    - this.malaria_harm 
+                    - this.plague_harm 
+                    - this.starvation_harm 
+                    - this.exposure_harm 
+                    + resilience_recovery
+                ));
+                
+                // Deaths derived from total harm
+                this.deaths_this_turn = this.malaria_harm + this.plague_harm + this.starvation_harm + this.exposure_harm;
                 this.deaths_cumulative += this.deaths_this_turn;
             }
             
@@ -1595,6 +2033,20 @@
                         this.awareness_queue.push(4);
                         effectsLog.push(`Awareness campaign: Trust +8, Disease -3 immediate, -4 delayed`);
                         break;
+                    case 'repair':
+                        this.budget -= 8;
+                        this.roof_integrity = Math.min(100, this.roof_integrity + 25);
+                        this.public_trust += 1;
+                        this.consecutive_ddt_uses = 0;
+                        effectsLog.push(`Repair Thatch: Roof +25, Trust +1`);
+                        break;
+                    case 'grain':
+                        this.budget -= 6;
+                        this.grain_stores = Math.min(100, this.grain_stores + 15);
+                        this.public_trust += 1;
+                        this.consecutive_ddt_uses = 0;
+                        effectsLog.push(`Protect Grain: Grain +15, Trust +1`);
+                        break;
                 }
                 
                 this.actionHistory.push({ turn: this.turn, action: action, effects: [...effectsLog] });
@@ -1611,7 +2063,8 @@
             }
             
             isFinished() {
-                return this.turn > 12;
+                // Player is finished if they've exceeded 12 turns OR village has collapsed
+                return this.turn > 12 || this.village_health <= 0;
             }
             
             calculateScore() {
@@ -1643,11 +2096,20 @@
                 let peak_penalty = Math.min(20, peak_infection * 0.1);
                 let duration_penalty = Math.min(15, outbreak_duration * 1.5);
                 let eco_penalty = Math.min(20, eco_events * 5);
+                
+                // Version 2A: Roof and Grain collapse penalties
+                let final_roof = this.roof_integrity;
+                let final_grain = this.grain_stores;
+                let roof_collapse_penalty = (final_roof < 30) ? 5 : 0;
+                let grain_collapse_penalty = (final_grain < 30) ? 5 : 0;
+                
                 let trust_bonus = Math.min(10, Math.floor(final_trust / 10));
                 let budget_bonus = Math.min(5, Math.floor(final_budget / 20));
                 
                 let score = Math.max(0, Math.min(100,
-                    100 - deaths_penalty - peak_penalty - duration_penalty - eco_penalty + trust_bonus + budget_bonus
+                    100 - deaths_penalty - peak_penalty - duration_penalty - eco_penalty 
+                    - roof_collapse_penalty - grain_collapse_penalty
+                    + trust_bonus + budget_bonus
                 ));
                 
                 return {
@@ -1657,7 +2119,9 @@
                     outbreak_duration: outbreak_duration,
                     eco_events: eco_events,
                     final_trust: final_trust,
-                    final_budget: final_budget
+                    final_budget: final_budget,
+                    final_roof: final_roof,
+                    final_grain: final_grain
                 };
             }
         }
@@ -1669,11 +2133,14 @@
         let currentRound = 1;
         let lastPlayerIndexAtRoundEnd = -1;
         let diseaseChart = null, populationChart = null, deathsChart = null;
+        let villageChart = null, resourceChart = null;
         let globalMaxDeaths = 50; // For consistent Y-axis across all players
         // Compare all players mode flags
         let compareDisease = false;
         let comparePopulation = false;
         let compareDeaths = false;
+        let compareVillage = false;
+        let compareResource = false;
         let roundEvents = []; // Track global events per round: { round: number, event: string }
         let fundingRound = -1; // Which round gets guaranteed funding (7, 8, or 9)
         
@@ -1815,19 +2282,14 @@
         
         // ==================== HEALTH CALCULATOR ====================
         function calculateHealthScore(player) {
-            let health = 100
-                - (player.malaria_infected * 0.4)
-                - (player.rat_disease_infected * 0.4)
-                - (player.rats * 0.1)
-                - (player.ddt * 0.1)
-                - (player.deaths_this_turn * 2)
-                + (player.public_trust * 0.2);
-            return Math.max(0, Math.min(100, Math.round(health)));
+            // Version 2A: Use village_health directly
+            return player.village_health;
         }
         
         function updateHealthMeter() {
             let player = getCurrentPlayer();
-            let health = calculateHealthScore(player);
+            // Version 2A: Use village_health directly
+            let health = player.village_health;
             
             let bar = document.getElementById('healthBar');
             let percent = document.getElementById('healthPercent');
@@ -1839,13 +2301,13 @@
             bar.className = 'health-bar';
             if (health >= 70) {
                 bar.classList.add('green');
-                value.textContent = 'Healthy';
+                value.textContent = 'Thriving';
             } else if (health >= 40) {
                 bar.classList.add('yellow');
-                value.textContent = 'Stressed';
+                value.textContent = 'Struggling';
             } else {
                 bar.classList.add('red');
-                value.textContent = 'Critical!';
+                value.textContent = 'Collapsing!';
             }
         }
         
@@ -1897,6 +2359,12 @@
                 players.push(new Player(names[i], i));
             }
             
+            // Deal starting hands (2 cards each)
+            players.forEach(p => {
+                p.drawCard();
+                p.drawCard();
+            });
+            
             currentPlayerIndex = 0;
             currentRound = 1;
             lastPlayerIndexAtRoundEnd = -1;
@@ -1925,6 +2393,9 @@
             
             showScreen('gameScreen');
             updateGameUI();
+            
+            // Start the card-based turn flow
+            startTurnFlow();
         }
         
         function restartGame() {
@@ -1935,6 +2406,407 @@
         function getCurrentPlayer() {
             return players[currentPlayerIndex];
         }
+        
+        // ==================== CARD-BASED TURN SYSTEM ====================
+        
+        // Start of turn - apply budget growth and show choice UI
+        function startTurnFlow() {
+            let player = getCurrentPlayer();
+            
+            // Apply start-of-turn budget growth
+            let budgetGain = player.applyStartOfTurnBudgetGrowth();
+            
+            // Reset turn choice state
+            player.startOfTurnChoiceMade = false;
+            player.selectedCards = []; // Reset selected cards
+            
+            // Show the start-of-turn UI with hand + choice buttons
+            showTurnChoiceUI();
+            
+            // Log the budget growth
+            let logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span style="color:#2ed573">📈 ${player.name} start-of-turn funding increase: +5</span>`;
+            document.getElementById('logContainer').appendChild(logEntry);
+            
+            // Scroll log to bottom
+            let container = document.getElementById('logContainer');
+            container.scrollTop = container.scrollHeight;
+            
+            updateGameUI();
+        }
+        
+        // Player chooses to draw a card
+        function chooseDrawCard() {
+            let player = getCurrentPlayer();
+            if (player.startOfTurnChoiceMade) return;
+            
+            // Check if hand is full
+            if (player.hand.length >= 6) {
+                alert("Your hand is full! You must choose +10 Budget instead.");
+                return;
+            }
+            
+            player.startOfTurnChoiceMade = true;
+            let drawnCard = player.drawCard();
+            
+            // Log the draw
+            let cardName = getCardDisplayName(drawnCard);
+            let logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span style="color:#f39c12">🎴 Drew ${cardName}</span>`;
+            document.getElementById('logContainer').appendChild(logEntry);
+            
+            // Scroll log to bottom
+            let container = document.getElementById('logContainer');
+            container.scrollTop = container.scrollHeight;
+            
+            // Show card playing UI
+            showCardPlayUI();
+            updateGameUI();
+        }
+        
+        // Player chooses to gain +10 budget
+        function chooseGainBudget() {
+            let player = getCurrentPlayer();
+            if (player.startOfTurnChoiceMade) return;
+            
+            player.startOfTurnChoiceMade = true;
+            player.budget += 10;
+            
+            // Log the gain
+            let logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span style="color:#2ed573">💰 Gained +10 Budget</span>`;
+            document.getElementById('logContainer').appendChild(logEntry);
+            
+            // Scroll log to bottom
+            let container = document.getElementById('logContainer');
+            container.scrollTop = container.scrollHeight;
+            
+            // Show card playing UI
+            showCardPlayUI();
+            updateGameUI();
+        }
+        
+        // Player plays a card from hand
+        function playCardFromHand(cardType) {
+            let player = getCurrentPlayer();
+            
+            // Check if player can play this card
+            if (!player.canPlayCard(cardType)) {
+                return;
+            }
+            
+            let effectsLog = [];
+            player.playCard(cardType, effectsLog);
+            
+            // Log the card play
+            let cardName = getCardDisplayName(cardType);
+            let logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span style="color:#9b59b6">🎴 Played ${cardName}</span>`;
+            document.getElementById('logContainer').appendChild(logEntry);
+            
+            // Log effects
+            effectsLog.forEach(effect => {
+                let effectEntry = document.createElement('div');
+                effectEntry.className = 'log-entry';
+                effectEntry.innerHTML = `<span style="color:#aaa">   → ${effect}</span>`;
+                document.getElementById('logContainer').appendChild(effectEntry);
+            });
+            
+            // Scroll log to bottom
+            let container = document.getElementById('logContainer');
+            container.scrollTop = container.scrollHeight;
+            
+            updateGameUI();
+        }
+        
+        // Player ends their turn - play all selected cards
+        function endTurnFlow() {
+            let player = getCurrentPlayer();
+            let effectsLog = [];
+            
+            // Log selected cards
+            if (player.selectedCards.length > 0) {
+                let cardNames = player.selectedCards.map(idx => getCardDisplayName(player.hand[idx])).join(', ');
+                let logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `<span style="color:#f39c12">📋 Selected: ${cardNames}</span>`;
+                document.getElementById('logContainer').appendChild(logEntry);
+            } else {
+                let logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `<span style="color:#888">📋 No cards selected</span>`;
+                document.getElementById('logContainer').appendChild(logEntry);
+            }
+            
+            // Play all selected cards (in reverse order of indices to handle removal correctly)
+            let indicesToRemove = [...player.selectedCards].sort((a, b) => b - a);
+            indicesToRemove.forEach(idx => {
+                let cardType = player.hand[idx];
+                if (cardType !== undefined) {
+                    let cardEffectsLog = [];
+                    player.playCard(cardType, idx, cardEffectsLog);
+                    
+                    // Log the card play
+                    let cardName = getCardDisplayName(cardType);
+                    let logEntry = document.createElement('div');
+                    logEntry.className = 'log-entry';
+                    logEntry.innerHTML = `<span style="color:#9b59b6">🎴 Played ${cardName}</span>`;
+                    document.getElementById('logContainer').appendChild(logEntry);
+                    
+                    // Log effects
+                    cardEffectsLog.forEach(effect => {
+                        let effectEntry = document.createElement('div');
+                        effectEntry.className = 'log-entry';
+                        effectEntry.innerHTML = `<span style="color:#aaa">   → ${effect}</span>`;
+                        document.getElementById('logContainer').appendChild(effectEntry);
+                    });
+                    
+                    // Card is already removed in playCard() - no need to splice again
+                }
+            });
+            
+            // Clear selected cards
+            player.selectedCards = [];
+            
+            // Apply end-of-turn processing
+            player.applyNaturalDynamics();
+            player.applyDelayedEffects(effectsLog);
+            player.computeDeaths();
+            player.updateTrust();
+            player.clamp();
+            player.turn++;
+            player.recordTurn();
+            
+            // Log end of turn
+            let logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span style="color:#888">--- Turn ended ---</span>`;
+            document.getElementById('logContainer').appendChild(logEntry);
+            
+            // Determine if this is the last player in the round
+            let nextSequentialIndex = (currentPlayerIndex + 1) % numPlayers;
+            let isLastInRound = (nextSequentialIndex === 0);
+            
+            // Check if any players between now and wrap point are unfinished
+            if (nextSequentialIndex !== 0) {
+                let anyUnfinishedBeforeWrap = false;
+                for (let i = nextSequentialIndex; i < numPlayers; i++) {
+                    if (!players[i].isFinished()) {
+                        anyUnfinishedBeforeWrap = true;
+                        break;
+                    }
+                }
+                if (!anyUnfinishedBeforeWrap) {
+                    isLastInRound = true;
+                }
+            }
+            
+            // Hide event banner at start of new round
+            if (isLastInRound) {
+                document.getElementById('eventBanner').classList.remove('active');
+            }
+            
+            // Find next player
+            let nextPlayerIndex = null;
+            
+            if (player.isFinished()) {
+                let found = false;
+                for (let i = 1; i <= numPlayers; i++) {
+                    let idx = (currentPlayerIndex + i) % numPlayers;
+                    if (!players[idx].isFinished()) {
+                        nextPlayerIndex = idx;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    pendingAdvanceType = 'endGame';
+                }
+            } else {
+                nextPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+                let checks = 0;
+                while (players[nextPlayerIndex].isFinished() && checks < numPlayers) {
+                    nextPlayerIndex = (nextPlayerIndex + 1) % numPlayers;
+                    checks++;
+                }
+                if (players[nextPlayerIndex].isFinished()) {
+                    pendingAdvanceType = 'endGame';
+                }
+            }
+            
+            // Set pending state
+            pendingAdvance = true;
+            pendingNextPlayerIndex = nextPlayerIndex;
+            pendingWasLastPlayerInRound = isLastInRound;
+            
+            // Hide card containers
+            document.getElementById('turnChoiceContainer').style.display = 'none';
+            document.getElementById('cardPlayContainer').style.display = 'none';
+            document.getElementById('endTurnContainer').style.display = 'none';
+            
+            // Scroll log to bottom
+            let container = document.getElementById('logContainer');
+            container.scrollTop = container.scrollHeight;
+            
+            // Auto-advance to next player
+            advanceTurnFlow();
+        }
+        
+        // Helper to get display name for cards
+        function getCardDisplayName(cardType) {
+            const names = {
+                'cats': 'Cat Drop',
+                'ddt': 'Spray DDT',
+                'awareness': 'Awareness',
+                'repair': 'Repair Thatch',
+                'grain': 'Protect Grain',
+                'bonus_funding': 'Bonus Funding',
+                'medical_aid': 'Medical Aid'
+            };
+            return names[cardType] || cardType;
+        }
+        
+        // Show the start-of-turn choice UI - hand visible but locked until choice made
+        function showTurnChoiceUI() {
+            // Hand always visible but locked
+            document.getElementById('cardPlayContainer').style.display = 'block';
+            // Show Draw/Gain Budget buttons
+            document.getElementById('turnChoiceContainer').style.display = 'flex';
+            // Hide End Turn until choice made
+            document.getElementById('endTurnContainer').style.display = 'none';
+            
+            let player = getCurrentPlayer();
+            let drawBtn = document.getElementById('drawCardBtn');
+            let gainBtn = document.getElementById('gainBudgetBtn');
+            
+            // Disable draw if hand is full
+            drawBtn.disabled = (player.hand.length >= 6);
+            gainBtn.disabled = false;
+            
+            // Render hand in locked state (not selectable yet)
+            renderHand(true); // true = locked
+        }
+        
+        // Show the card playing UI (after Draw/Add Budget choice) - hand active
+        function showCardPlayUI() {
+            document.getElementById('turnChoiceContainer').style.display = 'none';
+            document.getElementById('cardPlayContainer').style.display = 'block';
+            document.getElementById('endTurnContainer').style.display = 'block';
+            
+            renderHand(false); // false = active/selectable
+        }
+        
+        // Render the player's hand with selection support
+        // locked: true = not selectable yet (before Draw/Gain Budget choice)
+        // locked: false = active/selectable
+        function renderHand(locked) {
+            let player = getCurrentPlayer();
+            let handContainer = document.getElementById('handCards');
+            handContainer.innerHTML = '';
+            
+            // Update hand count display
+            document.getElementById('handCount').textContent = player.hand.length;
+            
+            // Calculate total cost of currently selected cards
+            let selectedTotalCost = 0;
+            player.selectedCards.forEach(idx => {
+                if (player.hand[idx] !== undefined) {
+                    selectedTotalCost += player.getCardCost(player.hand[idx]);
+                }
+            });
+            
+            player.hand.forEach((cardType, index) => {
+                let cardBtn = document.createElement('button');
+                cardBtn.className = 'card-btn';
+                
+                // Check if this specific card (by index) is selected
+                let isSelected = player.selectedCards.includes(index);
+                let canAfford = player.canPlayCard(cardType) && (player.budget >= selectedTotalCost + player.getCardCost(cardType));
+                
+                // Apply states
+                if (locked) {
+                    cardBtn.classList.add('locked');
+                } else if (isSelected) {
+                    cardBtn.classList.add('selected');
+                } else if (!canAfford) {
+                    cardBtn.classList.add('unaffordable');
+                    cardBtn.disabled = true;
+                }
+                
+                let cardName = getCardDisplayName(cardType);
+                let cost = player.getCardCost(cardType);
+                let costText = cost > 0 ? ` (${cost})` : ' (Free)';
+                
+                cardBtn.innerHTML = `<span class="card-icon">${getCardIcon(cardType)}</span><span class="card-name">${cardName}</span><span class="card-cost">${costText}</span>`;
+                
+                // Click toggles selection (not immediate play)
+                // Selected cards are ALWAYS clickable for deselection
+                // Unselected cards are clickable only if affordable
+                if (!locked) {
+                    if (isSelected || canAfford) {
+                        cardBtn.onclick = () => toggleCardSelection(index);
+                    } else {
+                        cardBtn.disabled = true;
+                    }
+                } else {
+                    cardBtn.disabled = true;
+                }
+                
+                handContainer.appendChild(cardBtn);
+            });
+        }
+        
+        // Toggle card selection for play (by index, not type)
+        function toggleCardSelection(index) {
+            let player = getCurrentPlayer();
+            
+            // Calculate total cost of currently selected cards
+            let selectedTotalCost = 0;
+            player.selectedCards.forEach(idx => {
+                if (player.hand[idx] !== undefined) {
+                    selectedTotalCost += player.getCardCost(player.hand[idx]);
+                }
+            });
+            
+            // Get the card type at this index
+            let cardType = player.hand[index];
+            let cardCost = player.getCardCost(cardType);
+            
+            // Check if this specific card is already selected
+            let selectedIndex = player.selectedCards.indexOf(index);
+            
+            if (selectedIndex > -1) {
+                // Deselect - remove from selectedCards
+                player.selectedCards.splice(selectedIndex, 1);
+            } else {
+                // Select - check if affordable
+                if (player.budget >= selectedTotalCost + cardCost) {
+                    player.selectedCards.push(index);
+                }
+            }
+            
+            renderHand(false); // Re-render in active state
+        }
+        
+        // Get icon for card type
+        function getCardIcon(cardType) {
+            const icons = {
+                'cats': '🐱',
+                'ddt': '💧',
+                'awareness': '📢',
+                'repair': '🏚️',
+                'grain': '🌾',
+                'bonus_funding': '💰',
+                'medical_aid': '🏥'
+            };
+            return icons[cardType] || '🎴';
+        }
+        
+        // ==================== END CARD-BASED SYSTEM ====================
         
         // New 2-step flow: resolve action without advancing
         function applyAction(action) {
@@ -2085,22 +2957,16 @@
             pendingNextPlayerIndex = null;
             pendingWasLastPlayerInRound = false;
             
-            // Hide advance button, enable action buttons
-            // The updateGameUI call will recalculate proper disabled states based on new player's budget
+            // Hide advance button
             document.getElementById('advanceButtonContainer').style.display = 'none';
-            document.querySelectorAll('.action-btn').forEach(btn => {
-                if (!btn.id || btn.id !== 'advanceBtn') {
-                    btn.disabled = false;
-                    btn.classList.remove('budget-disabled'); // Clean up any budget-disabled styling
-                }
-            });
             
-            updateGameUI();
+            // Start the card-based turn flow for the new player
+            startTurnFlow();
         }
         
         function logEvent(player, actionName, effectsLog) {
-            let actionLabels = { ddt: 'Spray DDT', nothing: 'Do Nothing', cats: 'Cat Drop', awareness: 'Awareness Campaign' };
-            let actionCosts = { ddt: -12, nothing: 0, cats: -15, awareness: -10 };
+            let actionLabels = { ddt: 'Spray DDT', nothing: 'Do Nothing', cats: 'Cat Drop', awareness: 'Awareness Campaign', repair: 'Repair Thatch', grain: 'Protect Grain' };
+            let actionCosts = { ddt: -12, nothing: 0, cats: -15, awareness: -10, repair: -8, grain: -6 };
             
             // Store previous values for comparison (need to get from dataLog)
             let prevIdx = player.dataLog.turn.length - 2; // Previous turn index
@@ -2130,6 +2996,12 @@
                     break;
                 case 'awareness':
                     narrative = 'Community health workers begin an awareness campaign across the villages.';
+                    break;
+                case 'repair':
+                    narrative = 'Village crews repair damaged thatch roofs before the next storm.';
+                    break;
+                case 'grain':
+                    narrative = 'Villagers secure and protect the grain stores from spoilage and theft.';
                     break;
             }
             
@@ -2308,6 +3180,25 @@
             ratEl.textContent = p.rat_disease_infected;
             ratEl.className = 'stat-value ' + (p.rat_disease_infected > 75 ? 'danger' : p.rat_disease_infected > 50 ? 'warning' : '');
             
+            // Version 2A: New stats displays
+            let villageEl = document.getElementById('villageHealthDisplay');
+            if (villageEl) {
+                villageEl.textContent = p.village_health;
+                villageEl.className = 'stat-value ' + (p.village_health < 30 ? 'danger' : p.village_health < 60 ? 'warning' : 'success');
+            }
+            
+            let roofEl = document.getElementById('roofDisplay');
+            if (roofEl) {
+                roofEl.textContent = p.roof_integrity;
+                roofEl.className = 'stat-value ' + (p.roof_integrity < 30 ? 'danger' : p.roof_integrity < 60 ? 'warning' : 'success');
+            }
+            
+            let grainEl = document.getElementById('grainDisplay');
+            if (grainEl) {
+                grainEl.textContent = p.grain_stores;
+                grainEl.className = 'stat-value ' + (p.grain_stores < 30 ? 'danger' : p.grain_stores < 60 ? 'warning' : 'success');
+            }
+            
             // Turn info - show current round number (matches yellow round indicator at top)
             var turnEl = document.getElementById('turnNumberDisplay');
             var roundVal = currentRound || 1;
@@ -2334,6 +3225,8 @@
                 if (action === 'ddt' && currentBudget < 12) { disabled = true; addBudgetDisabledClass = true; }
                 else if (action === 'cats' && currentBudget < catCost) { disabled = true; addBudgetDisabledClass = true; }
                 else if (action === 'awareness' && currentBudget < 10) { disabled = true; addBudgetDisabledClass = true; }
+                else if (action === 'repair' && currentBudget < 8) { disabled = true; addBudgetDisabledClass = true; }
+                else if (action === 'grain' && currentBudget < 6) { disabled = true; addBudgetDisabledClass = true; }
                 // Do Nothing is always enabled (costs 0)
                 
                 // Also disable if waiting for manual advance (CASE A - all buttons)
@@ -2403,10 +3296,12 @@
                     <td>${sd.eco_events}</td>
                     <td>${sd.final_trust}</td>
                     <td>${sd.final_budget}</td>
+                    <td>${sd.final_roof}</td>
+                    <td>${sd.final_grain}</td>
                 </tr>`;
             });
             
-            ['diseasePlayerSelect', 'populationPlayerSelect', 'deathsPlayerSelect'].forEach(selId => {
+            ['diseasePlayerSelect', 'populationPlayerSelect', 'deathsPlayerSelect', 'villagePlayerSelect', 'resourcePlayerSelect'].forEach(selId => {
                 document.getElementById(selId).innerHTML = players.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
             });
             
@@ -2417,6 +3312,8 @@
             if (diseaseChart) diseaseChart.destroy();
             if (populationChart) populationChart.destroy();
             if (deathsChart) deathsChart.destroy();
+            if (villageChart) villageChart.destroy();
+            if (resourceChart) resourceChart.destroy();
             
             let player = players[0];
             let log = player.dataLog;
@@ -2507,6 +3404,47 @@
                     scales: { 
                         x: { title: { display: true, text: 'Turn', color: '#888' }, ticks: { color: '#888', font: { size: 9 } } }, 
                         y: { title: { display: true, text: 'Deaths', color: '#888' }, min: 0, max: maxDeaths, ticks: { color: '#888', font: { size: 9 } } } 
+                    } 
+                }
+            });
+            
+            // Version 2A: Village Health Chart
+            villageChart = new Chart(document.getElementById('villageChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Village Health', data: log.village_health, borderColor: '#00d4ff', fill: false, tension: 0.3 }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: '#aaa', font: { size: 10 } } } },
+                    scales: { 
+                        x: { title: { display: true, text: 'Turn', color: '#888' }, ticks: { color: '#888', font: { size: 9 } } }, 
+                        y: { title: { display: true, text: 'Health', color: '#888' }, min: 0, max: 100, ticks: { color: '#888', font: { size: 9 } } } 
+                    } 
+                }
+            });
+            
+            // Version 2A: Roof & Grain Chart
+            resourceChart = new Chart(document.getElementById('resourceChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Roof Integrity', data: log.roof_integrity, borderColor: '#e67e22', fill: false, tension: 0.3 },
+                        { label: 'Grain Stores', data: log.grain_stores, borderColor: '#f1c40f', fill: false, tension: 0.3 }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: '#aaa', font: { size: 10 } } } },
+                    scales: { 
+                        x: { title: { display: true, text: 'Turn', color: '#888' }, ticks: { color: '#888', font: { size: 9 } } }, 
+                        y: { title: { display: true, text: 'Level', color: '#888' }, min: 0, max: 100, ticks: { color: '#888', font: { size: 9 } } } 
                     } 
                 }
             });
@@ -2778,13 +3716,150 @@
             deathsChart.update();
         }
         
+        // Version 2A: Village Health Chart functions
+        function updateVillageChart() {
+            if (compareVillage) {
+                compareVillage = false;
+                document.querySelectorAll('.chart-section')[3].querySelector('.btn-compare').classList.remove('active');
+            }
+            let idx = parseInt(document.getElementById('villagePlayerSelect').value);
+            let p = players[idx];
+            let log = p.dataLog;
+            let labels = [];
+            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', awareness: '📢', repair: '🏚️', grain: '🌾' };
+            for (let i = 0; i < log.turn.length; i++) {
+                let turnNum = log.turn[i];
+                let actionEntry = p.actionHistory.find(a => a.turn === turnNum);
+                let action = actionEntry ? actionEntry.action : '';
+                let symbol = actionSymbols[action] || '';
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
+                labels.push('T' + turnNum + symbol + eventTag);
+            }
+            villageChart.data.labels = labels;
+            villageChart.data.datasets = [
+                { label: 'Village Health', data: log.village_health, borderColor: '#00d4ff', fill: false, tension: 0.3 }
+            ];
+            villageChart.update();
+        }
+        
+        function toggleCompareVillage() {
+            compareVillage = !compareVillage;
+            document.querySelectorAll('.chart-section')[3].querySelector('.btn-compare').classList.toggle('active', compareVillage);
+            if (compareVillage) {
+                updateVillageChartCompareAll();
+            } else {
+                updateVillageChart();
+            }
+        }
+        
+        function updateVillageChartCompareAll() {
+            let refLog = players[0].dataLog;
+            let labels = [];
+            for (let i = 0; i < refLog.turn.length; i++) {
+                let turnNum = refLog.turn[i];
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
+                labels.push('T' + turnNum + eventTag);
+            }
+            let datasets = [];
+            let colors = ['#ff4757', '#ffa502', '#2ed573', '#00d4ff'];
+            players.forEach((p, idx) => {
+                datasets.push({
+                    label: p.name,
+                    data: p.dataLog.village_health,
+                    borderColor: colors[idx % colors.length],
+                    fill: false,
+                    tension: 0.3
+                });
+            });
+            villageChart.data.labels = labels;
+            villageChart.data.datasets = datasets;
+            villageChart.update();
+        }
+        
+        // Version 2A: Resource Chart functions (Roof & Grain)
+        function updateResourceChart() {
+            if (compareResource) {
+                compareResource = false;
+                document.querySelectorAll('.chart-section')[4].querySelector('.btn-compare').classList.remove('active');
+            }
+            let idx = parseInt(document.getElementById('resourcePlayerSelect').value);
+            let p = players[idx];
+            let log = p.dataLog;
+            let labels = [];
+            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', awareness: '📢', repair: '🏚️', grain: '🌾' };
+            for (let i = 0; i < log.turn.length; i++) {
+                let turnNum = log.turn[i];
+                let actionEntry = p.actionHistory.find(a => a.turn === turnNum);
+                let action = actionEntry ? actionEntry.action : '';
+                let symbol = actionSymbols[action] || '';
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
+                labels.push('T' + turnNum + symbol + eventTag);
+            }
+            resourceChart.data.labels = labels;
+            resourceChart.data.datasets = [
+                { label: 'Roof Integrity', data: log.roof_integrity, borderColor: '#e67e22', fill: false, tension: 0.3 },
+                { label: 'Grain Stores', data: log.grain_stores, borderColor: '#f1c40f', fill: false, tension: 0.3 }
+            ];
+            resourceChart.update();
+        }
+        
+        function toggleCompareResource() {
+            compareResource = !compareResource;
+            document.querySelectorAll('.chart-section')[4].querySelector('.btn-compare').classList.toggle('active', compareResource);
+            if (compareResource) {
+                updateResourceChartCompareAll();
+            } else {
+                updateResourceChart();
+            }
+        }
+        
+        function updateResourceChartCompareAll() {
+            let refLog = players[0].dataLog;
+            let labels = [];
+            for (let i = 0; i < refLog.turn.length; i++) {
+                let turnNum = refLog.turn[i];
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
+                labels.push('T' + turnNum + eventTag);
+            }
+            let datasets = [];
+            let colors = ['#ff4757', '#ffa502', '#2ed573', '#00d4ff'];
+            players.forEach((p, idx) => {
+                datasets.push({
+                    label: p.name + ' - Roof',
+                    data: p.dataLog.roof_integrity,
+                    borderColor: colors[idx % colors.length],
+                    fill: false,
+                    tension: 0.3
+                });
+                datasets.push({
+                    label: p.name + ' - Grain',
+                    data: p.dataLog.grain_stores,
+                    borderColor: colors[idx % colors.length],
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.3
+                });
+            });
+            resourceChart.data.labels = labels;
+            resourceChart.data.datasets = datasets;
+            resourceChart.update();
+        }
+        
         function exportAllCSV() {
             // Create a single CSV file with all players' data
-            let csv = 'Player,Turn,Mosquitoes,DDT,Cats,Rats,Malaria,RatDisease,DeathsTurn,DeathsCum,Trust,Budget\n';
+            let csv = 'Player,Turn,Mosquitoes,DDT,Cats,Rats,Malaria,RatDisease,DeathsTurn,DeathsCum,Trust,Budget,VillageHealth,Roof,Grain\n';
             
             players.forEach((p) => {
                 for (let i = 0; i < p.dataLog.turn.length; i++) {
-                    csv += `"${p.name}",${p.dataLog.turn[i]},${p.dataLog.mosquitoes[i]},${p.dataLog.ddt[i]},${p.dataLog.cats[i]},${p.dataLog.rats[i]},${p.dataLog.malaria_infected[i]},${p.dataLog.rat_disease_infected[i]},${p.dataLog.deaths_this_turn[i]},${p.dataLog.deaths_cumulative[i]},${p.dataLog.public_trust[i]},${p.dataLog.budget[i]}\n`;
+                    csv += `"${p.name}",${p.dataLog.turn[i]},${p.dataLog.mosquitoes[i]},${p.dataLog.ddt[i]},${p.dataLog.cats[i]},${p.dataLog.rats[i]},${p.dataLog.malaria_infected[i]},${p.dataLog.rat_disease_infected[i]},${p.dataLog.deaths_this_turn[i]},${p.dataLog.deaths_cumulative[i]},${p.dataLog.public_trust[i]},${p.dataLog.budget[i]},${p.dataLog.village_health[i]},${p.dataLog.roof_integrity[i]},${p.dataLog.grain_stores[i]}\n`;
                 }
             });
             
