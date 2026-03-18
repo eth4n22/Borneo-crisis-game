@@ -585,6 +585,287 @@
             }
         }
         
+        /* ============================================
+           MOBILE RESPONSIVE STYLES (max-width: 768px)
+           ============================================ */
+        @media (max-width: 768px) {
+            /* Prevent horizontal overflow */
+            * {
+                max-width: 100vw;
+                overflow-x: hidden;
+            }
+            
+            body {
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            
+            /* Main header adjustments */
+            .main-header {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .main-header h1 {
+                font-size: 1.1rem;
+                margin-bottom: 8px;
+            }
+            
+            .main-header .stats-bar {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .main-header .stat {
+                font-size: 0.75rem;
+                padding: 4px 8px;
+            }
+            
+            /* Game layout - stack all panels */
+            .game-layout {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            /* Left panel - players sidebar - stack below main area */
+            .left-panel {
+                order: 2;
+            }
+            
+            .left-panel .card {
+                padding: 10px;
+            }
+            
+            .left-panel h2 {
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+            }
+            
+            #playersSidebar {
+                max-height: none;
+                overflow-y: visible;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 8px;
+                padding-right: 0;
+            }
+            
+            .player-card {
+                padding: 8px;
+                margin-bottom: 0;
+            }
+            
+            .player-card h3 {
+                font-size: 0.8rem;
+            }
+            
+            .player-card .stat-row {
+                font-size: 0.65rem;
+            }
+            
+            /* Right panel - main play area - stack first */
+            .right-panel {
+                order: 1;
+                gap: 10px;
+            }
+            
+            .right-panel .card {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .right-panel .card h2 {
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+            }
+            
+            /* Village health panel */
+            .village-health-panel .health-display {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .village-health-panel .health-bar-container {
+                width: 100%;
+            }
+            
+            /* Current player panel */
+            .current-player-panel .player-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .current-player-panel .player-name {
+                font-size: 1rem;
+            }
+            
+            .current-player-panel .budget-display {
+                font-size: 0.9rem;
+            }
+            
+            /* Stats panel - compact display */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            
+            .stat-row {
+                font-size: 0.75rem;
+                padding: 4px 0;
+            }
+            
+            /* Policy actions / Hand cards */
+            .card-play-container {
+                margin-bottom: 10px;
+            }
+            
+            .turn-choice-container {
+                gap: 8px;
+            }
+            
+            .choice-btn {
+                padding: 10px 8px;
+                font-size: 0.8rem;
+            }
+            
+            .hand-cards {
+                gap: 6px;
+            }
+            
+            .card-btn {
+                min-width: 80px;
+                padding: 8px 10px;
+                flex: 1 1 calc(50% - 6px);
+            }
+            
+            .card-btn .card-icon {
+                font-size: 1.2rem;
+            }
+            
+            .card-btn .card-name {
+                font-size: 0.65rem;
+            }
+            
+            .card-btn .card-cost {
+                font-size: 0.6rem;
+            }
+            
+            .end-turn-btn {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            
+            /* Event log */
+            .event-log {
+                max-height: 150px;
+                font-size: 0.75rem;
+            }
+            
+            /* Charts container */
+            .charts-container {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .chart-card {
+                padding: 10px;
+            }
+            
+            .chart-card canvas {
+                max-width: 100%;
+                height: auto !important;
+            }
+            
+            /* How to play panel */
+            .guide-content {
+                font-size: 0.8rem;
+            }
+            
+            .guide-content ol {
+                padding-left: 20px;
+            }
+            
+            .guide-content li {
+                margin-bottom: 6px;
+            }
+            
+            .card-legend {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .legend-item {
+                padding: 6px;
+                font-size: 0.7rem;
+            }
+            
+            /* Game over screen */
+            .game-over-content {
+                padding: 15px;
+            }
+            
+            .game-over-content h1 {
+                font-size: 1.3rem;
+            }
+            
+            .final-scores {
+                font-size: 0.85rem;
+            }
+            
+            .final-scores .player-score {
+                padding: 8px;
+                margin-bottom: 8px;
+            }
+            
+            /* Overlay screens */
+            .overlay-content {
+                padding: 15px;
+                margin: 10px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            /* Results breakdown */
+            .results-breakdown {
+                font-size: 0.8rem;
+            }
+            
+            .result-item {
+                padding: 6px 0;
+            }
+            
+            /* Responsive adjustments for very small screens */
+            @media (max-width: 400px) {
+                body {
+                    padding: 8px;
+                    font-size: 13px;
+                }
+                
+                .card-btn {
+                    flex: 1 1 100%;
+                }
+                
+                #playersSidebar {
+                    grid-template-columns: 1fr;
+                }
+                
+                .choice-btn {
+                    font-size: 0.75rem;
+                    padding: 8px 6px;
+                }
+            }
+        }
+        
         /* Left panel - Player Status */
         .left-panel .card {
             height: fit-content;
