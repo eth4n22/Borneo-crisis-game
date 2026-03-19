@@ -1345,6 +1345,36 @@
         .log-entry .deaths { color: #ff4757; }
         .log-entry .effect { color: #2ed573; }
         
+        /* Turn summary */
+        .turn-summary {
+            max-height: 120px;
+            overflow-y: auto;
+            background: rgba(46, 213, 115, 0.1);
+            border-left: 3px solid #2ed573;
+        }
+        
+        .turn-summary h3 {
+            font-size: 0.9rem;
+            color: #2ed573;
+            margin-bottom: 8px;
+        }
+        
+        .turn-summary ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .turn-summary li {
+            padding: 4px 0;
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+        
+        .turn-summary .improved { color: #2ed573; }
+        .turn-summary .worsened { color: #ff4757; }
+        .turn-summary .warning { color: #ffa502; }
+        
         /* Model notes - collapsible */
         .model-notes h2 {
             font-size: 0.9rem;
@@ -1548,7 +1578,7 @@
                     <li><strong>Auto-Draw:</strong> You automatically draw 1 card at the start of each turn.</li>
                     <li><strong>Choose One:</strong> Either take <em>+10 Budget</em> right now, OR draw 1 extra card. (You cannot do both.)</li>
                     <li><strong>Play Cards:</strong> Click any cards in your hand to select them. Selected cards are queued to play.</li>
-                    <li><strong>End Turn:</strong> Press End Turn to execute all selected cards and pass play to the next player.</li>
+                    <li><strong>Confirm Actions:</strong> Press Confirm Actions to resolve your selected cards, then press Next Player to continue.</li>
                 </ol>
                 <p style="margin-top: 12px;">You start with <strong>2 cards</strong> and can hold up to <strong>6 cards</strong>. Most cards cost budget to play.</p>
             </div>
@@ -1956,8 +1986,8 @@
                         </div>
                         
                         <div id="endTurnContainer" class="end-turn-container" style="display: none;">
-                            <button id="endTurnBtn" class="end-turn-btn" onclick="endTurnFlow()">
-                                ⏭️ End Turn
+                            <button id="endTurnBtn" class="end-turn-btn" onclick="handleConfirmOrNext()">
+                                ✅ Confirm Actions
                             </button>
                         </div>
                         
@@ -1977,6 +2007,12 @@
                         </div>
                     </div>
                     
+                    <!-- Turn Summary -->
+                    <div class="card turn-summary" id="turnSummary" style="display: none;">
+                        <h3>📊 Turn Summary</h3>
+                        <ul id="turnSummaryList"></ul>
+                    </div>
+
                     <!-- Event Log -->
                     <div class="card event-log">
                         <h2>📋 Event Log</h2>
@@ -2184,7 +2220,7 @@
                 this.rat_disease_infected += Math.floor((this.rats - this.rat_disease_infected) * 0.20);
                 
                 // Version 2A: Grain Stores - consumed + rat damage
-                let grain_loss = 1 + Math.floor(this.rats / 25);
+                let grain_loss = 2 + Math.floor(this.rats / 20);
                 this.grain_stores = Math.max(0, Math.min(100, this.grain_stores - grain_loss));
                 
                 // Version 2B: Ecological Chain Dynamics
@@ -2205,7 +2241,7 @@
                 
                 // --- CATERPILLAR ROOF DAMAGE ---
                 // Roof damage is now purely caterpillar-driven (removed passive decay)
-                let caterpillar_damage = Math.floor(this.caterpillars / 20);
+                let caterpillar_damage = Math.floor(this.caterpillars / 12);
                 this.roof_integrity = Math.max(0, Math.min(100, this.roof_integrity - caterpillar_damage));
                 
                 // --- GECKO TOXICITY BUILDUP ---
@@ -2428,11 +2464,11 @@
             
             computeDeaths() {
                 // Version 2A: Compute harm values
-                this.malaria_harm = Math.floor(this.malaria_infected / 25);
-                this.plague_harm = Math.floor(this.rat_disease_infected / 20);
+                this.malaria_harm = Math.floor(this.malaria_infected / 18);
+                this.plague_harm = Math.floor(this.rat_disease_infected / 15);
                 
-                // Starvation harm - only when grain < 40
-                if (this.grain_stores < 40) {
+                // Starvation harm - only when grain < 45
+                if (this.grain_stores < 45) {
                     this.starvation_harm = Math.floor((40 - this.grain_stores) / 10) + 1;
                 } else {
                     this.starvation_harm = 0;
@@ -2529,10 +2565,11 @@
             }
             
             updateTrust() {
+                // Base trust decay of -1 each turn
+                this.public_trust -= 1;
+                
                 if (this.deaths_this_turn >= 5) {
                     this.public_trust -= Math.floor(this.deaths_this_turn / 3);
-                } else if (this.deaths_this_turn < 5) {
-                    this.public_trust += 2;
                 }
                 // Note: Budget is now prevented from going negative in applyAction
                 // No need for actions_disabled logic anymore
@@ -2608,6 +2645,7 @@
         let numPlayers = 2;
         let currentRound = 1;
         let lastPlayerIndexAtRoundEnd = -1;
+        let actionsConfirmed = false; // Track if actions have been confirmed for current turn
         let diseaseChart = null, populationChart = null, deathsChart = null;
         let villageChart = null, resourceChart = null;
         let globalMaxDeaths = 50; // For consistent Y-axis across all players
@@ -2653,14 +2691,24 @@
             let roll = Math.random();
             if (roll > 0.30) return; // 70% no event
             
-            // 30% total - pick one of 5 events (excluding funding)
+            // 30% total - pick one of 6 events (excluding funding)
             let eventRoll = Math.random();
             let eventType = '';
             let eventTitle = '';
             let eventDesc = '';
             let effectsText = '';
             
-            if (eventRoll < 0.10) { // 10%
+            if (eventRoll < 0.08) { // 8% - Caterpillar Swarm
+                eventType = 'caterpillar-swarm';
+                eventTitle = '🐛 Caterpillar Swarm!';
+                eventDesc = 'A sudden caterpillar swarm tears through the village thatch.';
+                effectsText = 'Caterpillars +15, Roof -5, Trust -2';
+                players.forEach(p => {
+                    p.caterpillars = Math.min(100, p.caterpillars + 15);
+                    p.roof_integrity = Math.max(0, p.roof_integrity - 5);
+                    p.public_trust = Math.max(0, p.public_trust - 2);
+                });
+            } else if (eventRoll < 0.18) { // 10% - Monsoon
                 eventType = 'monsoon';
                 eventTitle = '🌧️ Monsoon Season!';
                 eventDesc = 'Heavy rains bring flooding and ideal mosquito breeding conditions.';
@@ -2671,7 +2719,7 @@
                     p.malaria_infected = Math.min(100, p.malaria_infected + 5);
                     p.public_trust = Math.max(0, p.public_trust - 2);
                 });
-            } else if (eventRoll < 0.16) { // 6%
+            } else if (eventRoll < 0.24) { // 6% - Rodent
                 eventType = 'rodent';
                 eventTitle = '🐀 Rodent Migration!';
                 eventDesc = 'A massive wave of rats migrates from the forests into villages.';
@@ -2681,7 +2729,7 @@
                     p.rat_disease_infected = Math.min(100, p.rat_disease_infected + 5);
                     p.cats = Math.max(0, p.cats - 3);
                 });
-            } else if (eventRoll < 0.21) { // 5%
+            } else if (eventRoll < 0.28) { // 4% - Scandal
                 eventType = 'scandal';
                 eventTitle = '📰 DDT Contamination Scandal!';
                 eventDesc = 'News breaks about DDT toxicity in local water supplies.';
@@ -2693,7 +2741,7 @@
                         p.public_trust = Math.max(0, p.public_trust - 4);
                     }
                 });
-            } else if (eventRoll < 0.26) { // 5%
+            } else if (eventRoll < 0.32) { // 4% - Cleanup
                 eventType = 'cleanup';
                 eventTitle = '🧹 Community Clean-Up Initiative!';
                 eventDesc = 'Villagers organize a massive sanitation and garbage removal effort.';
@@ -2703,7 +2751,7 @@
                     p.rat_disease_infected = Math.max(0, p.rat_disease_infected - 5);
                     p.public_trust = Math.min(100, p.public_trust + 6);
                 });
-            } else { // 4% - Cat Disease (removed funding from random pool)
+            } else { // Remaining ~18% - Cat Disease (very rare now)
                 eventType = 'cat-disease';
                 eventTitle = '🐱 Cat Disease Outbreak!';
                 eventDesc = 'A mysterious illness spreads through the feral cat population.';
@@ -2845,6 +2893,8 @@
             currentRound = 1;
             lastPlayerIndexAtRoundEnd = -1;
             roundEvents = []; // Reset round events
+            prevTurnState = {}; // Reset turn summary state
+            actionsConfirmed = false; // Reset actions confirmed state
             
             // Reset pending advance state
             pendingAdvance = false;
@@ -2888,6 +2938,18 @@
         // Start of turn - apply budget growth, investment bonus, and show choice UI
         function startTurnFlow() {
             let player = getCurrentPlayer();
+            
+            // Reset actions confirmed state for new turn
+            actionsConfirmed = false;
+            
+            // Reset button text
+            document.getElementById('endTurnBtn').textContent = '✅ Confirm Actions';
+            
+            // Unlock card selection
+            document.querySelectorAll('.hand-card').forEach(card => {
+                card.style.pointerEvents = 'auto';
+                card.style.opacity = '1';
+            });
             
             let totalBudgetGain = 0;
             
@@ -3048,8 +3110,19 @@
             updateGameUI();
         }
         
-        // Player ends their turn - play all selected cards
-        function endTurnFlow() {
+        // Handle Confirm Actions or Next Player button
+        function handleConfirmOrNext() {
+            if (!actionsConfirmed) {
+                // First click: Confirm actions and resolve them
+                confirmActions();
+            } else {
+                // Second click: Advance to next player
+                advanceToNextPlayer();
+            }
+        }
+        
+        // Confirm actions - resolve selected cards and show results
+        function confirmActions() {
             let player = getCurrentPlayer();
             let effectsLog = [];
             
@@ -3123,6 +3196,28 @@
             logEntry.innerHTML = `<span style="color:#888">--- Turn ended ---</span>`;
             document.getElementById('logContainer').appendChild(logEntry);
             
+            // Mark actions as confirmed
+            actionsConfirmed = true;
+            
+            // Update UI: change button to "Next Player"
+            document.getElementById('endTurnBtn').textContent = '⏭️ Next Player';
+            
+            // Re-render hand immediately to remove played cards and lock it
+            // This removes played cards from display and shows remaining cards as locked
+            renderHand(true); // true = locked state
+            
+            // Show turn summary (already handled in updateGameUI)
+            updateGameUI();
+            
+            // Scroll log to bottom
+            let container = document.getElementById('logContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // Advance to next player after actions are confirmed
+        function advanceToNextPlayer() {
+            let player = getCurrentPlayer();
+            
             // Determine if this is the last player in the round
             let nextSequentialIndex = (currentPlayerIndex + 1) % numPlayers;
             let isLastInRound = (nextSequentialIndex === 0);
@@ -3190,6 +3285,11 @@
             
             // Auto-advance to next player
             advanceTurnFlow();
+        }
+        
+        // Legacy function - kept for compatibility
+        function endTurnFlow() {
+            handleConfirmOrNext();
         }
         
         // Helper to get display name for cards
@@ -3877,6 +3977,103 @@
             if (!pendingAdvance) {
                 document.getElementById('advanceButtonContainer').style.display = 'none';
             }
+            
+            // Update turn summary
+            updateTurnSummary(player);
+        }
+        
+        // Track previous turn state for summary (per player)
+        let prevTurnState = {};
+        
+        function updateTurnSummary(player) {
+            const summaryEl = document.getElementById('turnSummary');
+            const listEl = document.getElementById('turnSummaryList');
+            
+            // Get previous state for this player
+            const prevState = prevTurnState[player.name];
+            
+            // No previous state - first turn for this player
+            if (!prevState) {
+                summaryEl.style.display = 'none';
+                // Store current state for next turn
+                prevTurnState[player.name] = {
+                    malaria_infected: player.malaria_infected,
+                    village_health: player.village_health,
+                    roof_integrity: player.roof_integrity,
+                    grain_stores: player.grain_stores,
+                    caterpillars: player.caterpillars,
+                    rats: player.rats,
+                    public_trust: player.public_trust,
+                    turn: player.turn
+                };
+                return;
+            }
+            
+            let items = [];
+            
+            // Check improvements
+            if (player.malaria_infected < prevState.malaria_infected) {
+                items.push(`<span class="improved">✓ Malaria pressure fell</span>`);
+            } else if (player.malaria_infected > prevState.malaria_infected) {
+                items.push(`<span class="worsened">✗ Malaria pressure rose</span>`);
+            }
+            
+            if (player.village_health > prevState.village_health) {
+                items.push(`<span class="improved">✓ Village health improved</span>`);
+            } else if (player.village_health < prevState.village_health) {
+                items.push(`<span class="worsened">✗ Village health declined</span>`);
+            }
+            
+            if (player.roof_integrity < prevState.roof_integrity) {
+                items.push(`<span class="worsened">✗ Roof integrity worsened</span>`);
+            }
+            
+            if (player.grain_stores < prevState.grain_stores) {
+                items.push(`<span class="warning">⚠ Grain stores depleted</span>`);
+            }
+            
+            if (player.caterpillars > prevState.caterpillars + 5) {
+                items.push(`<span class="warning">⚠ Caterpillars increased</span>`);
+            }
+            
+            if (player.rats > prevState.rats + 10) {
+                items.push(`<span class="warning">⚠ Rat population surged</span>`);
+            }
+            
+            if (player.public_trust < prevState.public_trust) {
+                items.push(`<span class="worsened">✗ Trust dropped</span>`);
+            }
+            
+            // Add warning based on current state
+            if (player.grain_stores < 50) {
+                items.push(`<span class="warning">⚠ Watch grain stores</span>`);
+            } else if (player.roof_integrity < 50) {
+                items.push(`<span class="warning">⚠ Watch roof integrity</span>`);
+            } else if (player.rats > 60) {
+                items.push(`<span class="warning">⚠ Watch rat population</span>`);
+            }
+            
+            // Limit to 4 items max
+            items = items.slice(0, 4);
+            
+            if (items.length === 0) {
+                summaryEl.style.display = 'none';
+            } else {
+                listEl.innerHTML = items.map(item => `<li>${item}</li>`).join('');
+                summaryEl.style.display = 'block';
+            }
+            
+            // Store current state for next turn
+            prevTurnState[player.name] = {
+                malaria_infected: player.malaria_infected,
+                village_health: player.village_health,
+                roof_integrity: player.roof_integrity,
+                grain_stores: player.grain_stores,
+                caterpillars: player.caterpillars,
+                rats: player.rats,
+                public_trust: player.public_trust,
+                turn: player.turn
+            };
         }
         
         function toggleNotes() {
