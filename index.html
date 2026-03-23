@@ -1786,12 +1786,21 @@
                             <tr><th>Card</th><th>Cost</th><th>Effects</th></tr>
                             <tr><td>Spray DDT</td><td>12</td><td>Mosquitoes −18, DDT +20, Trust +2</td></tr>
                             <tr><td>Cat Drop</td><td>15</td><td>Cats +18 (or +9 if cats &gt;85), Rats −10, Trust +1</td></tr>
-                            <tr><td>Awareness</td><td>10</td><td>Trust +3, Malaria −3, Rat Disease −3</td></tr>
-                            <tr><td>Repair Thatch</td><td>8</td><td>Roof +20</td></tr>
-                            <tr><td>Protect Grain</td><td>6</td><td>Grain +12</td></tr>
-                            <tr><td>Medical Aid</td><td>5</td><td>Malaria −8, Plague −8</td></tr>
+                            <tr><td>Awareness</td><td>10</td><td>Trust +2, Malaria −3, Rat Disease −3 (delayed +2)</td></tr>
+                            <tr><td>Repair Thatch</td><td>8</td><td>Roof +10 (to max 80)</td></tr>
+                            <tr><td>Protect Grain</td><td>6</td><td>Grain +10 (to max 85)</td></tr>
+                            <tr><td>Medical Aid</td><td>8</td><td>Malaria −6, Plague −6</td></tr>
                             <tr><td>Bonus Funding</td><td>0</td><td>Budget +15 (rare)</td></tr>
                         </table>
+                    </div>
+                    
+                    <div class="howto-subsection">
+                        <h4>📏 Realism: Roof & Grain Caps</h4>
+                        <ul>
+                            <li><strong>Roof Integrity:</strong> Cannot exceed base capacity (80). Repair restores damage up to this maximum.</li>
+                            <li><strong>Grain Stores:</strong> Cannot exceed base storage (85). Protect restores grain up to this maximum.</li>
+                            <li>This represents each village's original construction quality and storage capacity.</li>
+                        </ul>
                     </div>
                     
                     <div class="howto-subsection">
@@ -1808,11 +1817,10 @@
                     <div class="howto-subsection">
                         <h4>⚠️ Harm Thresholds</h4>
                         <ul>
-                            <li><strong>Starvation:</strong> Only when grain &lt; 50. Formula: floor((40 - grain) / 10) + 1</li>
-                            <li><strong>Exposure:</strong> Only when roof &lt; 50. Formula: floor((50 - roof) / 10) + 1</li>
-                            <li><strong>Malaria Harm:</strong> floor(malaria_infected / 25)</li>
-                            <li><strong>Plague Harm:</strong> floor(rat_disease_infected / 20)</li>
-                            <li><strong>Resilience:</strong> +1 health recovery if trust ≥ 70</li>
+                            <li><strong>Starvation:</strong> Only when grain &lt; 50. Formula: floor((50 - grain) / 8) + 1</li>
+                            <li><strong>Exposure:</strong> Only when roof &lt; 50. Formula: floor((50 - roof) / 8) + 1</li>
+                            <li><strong>Malaria Harm:</strong> floor(malaria_infected / 15)</li>
+                            <li><strong>Plague Harm:</strong> floor(rat_disease_infected / 12)</li>
                         </ul>
                     </div>
                     
@@ -2187,6 +2195,10 @@
                 this.roof_integrity = 80;
                 this.grain_stores = 85;
                 
+                // Max caps for realism (cannot exceed original capacity)
+                this.max_roof_integrity = 80;
+                this.max_grain_stores = 85;
+                
                 // Version 2B: Ecological chain variables
                 this.wasps = 55;
                 this.caterpillars = 15;
@@ -2286,7 +2298,7 @@
                 
                 // --- CATERPILLAR ROOF DAMAGE ---
                 // Roof damage is now purely caterpillar-driven (removed passive decay)
-                let caterpillar_damage = Math.floor(this.caterpillars / 12);
+                let caterpillar_damage = Math.floor(this.caterpillars / 10);
                 this.roof_integrity = Math.max(0, Math.min(100, this.roof_integrity - caterpillar_damage));
                 
                 // --- GECKO TOXICITY BUILDUP ---
@@ -2459,26 +2471,33 @@
                         
                     case 'awareness':
                         this.budget -= 10;
-                        this.public_trust += 3;
+                        this.public_trust += 1;
                         this.malaria_infected = Math.max(0, this.malaria_infected - 3);
                         this.rat_disease_infected = Math.max(0, this.rat_disease_infected - 3);
                         this.consecutive_ddt_uses = 0;
-                        this.awareness_queue.push(4);
-                        effectsLog.push(`Awareness: Trust +8, Disease -3 immediate, -4 delayed`);
+                        this.awareness_queue.push(2);
+                        effectsLog.push(`Awareness: Trust +1 immediate, Disease -3 immediate, +2 delayed`);
                         break;
                         
                     case 'repair':
                         this.budget -= 8;
-                        this.roof_integrity = Math.min(100, this.roof_integrity + 20);
+                        // Track if repair had effect before applying
+                        let roofBeforeRepair = this.roof_integrity;
+                        this.roof_integrity = Math.min(this.max_roof_integrity, this.roof_integrity + 10);
                         this.consecutive_ddt_uses = 0;
-                        effectsLog.push(`Repair Thatch: Roof +20`);
+                        if (roofBeforeRepair >= this.max_roof_integrity) {
+                            effectsLog.push(`Repair Thatch: No effect (roof already at max ${this.max_roof_integrity})`);
+                        } else {
+                            let actualIncrease = this.roof_integrity - roofBeforeRepair;
+                            effectsLog.push(`Repair Thatch: Roof +${actualIncrease} (max ${this.max_roof_integrity})`);
+                        }
                         break;
                     
                     case 'grain':
                         this.budget -= 6;
-                        this.grain_stores = Math.min(100, this.grain_stores + 12);
+                        this.grain_stores = Math.min(this.max_grain_stores, this.grain_stores + 10);
                         this.consecutive_ddt_uses = 0;
-                        effectsLog.push(`Protect Grain: Grain +12`);
+                        effectsLog.push(`Protect Grain: Grain +10 (max ${this.max_grain_stores})`);
                         break;
                         
                     case 'bonus_funding':
@@ -2487,10 +2506,10 @@
                         break;
                         
                     case 'medical_aid':
-                        this.budget -= 5;
-                        this.malaria_infected = Math.max(0, this.malaria_infected - 8);
-                        this.rat_disease_infected = Math.max(0, this.rat_disease_infected - 8);
-                        effectsLog.push(`Medical Aid: Malaria -8, Plague -8`);
+                        this.budget -= 8;
+                        this.malaria_infected = Math.max(0, this.malaria_infected - 6);
+                        this.rat_disease_infected = Math.max(0, this.rat_disease_infected - 6);
+                        effectsLog.push(`Medical Aid: Malaria -6, Plague -6`);
                         break;
                 }
             }
@@ -2504,20 +2523,20 @@
             // ==================== END CARD SYSTEM ====================
             
             computeDeaths() {
-                // Version 2A: Compute harm values
-                this.malaria_harm = Math.floor(this.malaria_infected / 18);
-                this.plague_harm = Math.floor(this.rat_disease_infected / 15);
+                // Compute harm values - increased pressure for more challenge
+                this.malaria_harm = Math.floor(this.malaria_infected / 15);
+                this.plague_harm = Math.floor(this.rat_disease_infected / 12);
                 
-                // Starvation harm - only when grain < 50
+                // Starvation harm - when grain drops below 50
                 if (this.grain_stores < 50) {
-                    this.starvation_harm = Math.floor((40 - this.grain_stores) / 10) + 1;
+                    this.starvation_harm = Math.floor((50 - this.grain_stores) / 8) + 1;
                 } else {
                     this.starvation_harm = 0;
                 }
                 
-                // Exposure harm - only when roof < 50
+                // Exposure harm - when roof drops below 50
                 if (this.roof_integrity < 50) {
-                    this.exposure_harm = Math.floor((50 - this.roof_integrity) / 10) + 1;
+                    this.exposure_harm = Math.floor((50 - this.roof_integrity) / 8) + 1;
                 } else {
                     this.exposure_harm = 0;
                 }
@@ -2576,26 +2595,33 @@
                         break;
                     case 'awareness':
                         this.budget -= 10; // Allow going negative
-                        this.public_trust += 8;
+                        this.public_trust += 1;
                         this.malaria_infected = Math.max(0, this.malaria_infected - 3);
                         this.rat_disease_infected = Math.max(0, this.rat_disease_infected - 3);
                         this.consecutive_ddt_uses = 0;
-                        // Delayed effect after 1 turn: mosquitoes -= 4, rats -= 4
-                        this.awareness_queue.push(4);
-                        effectsLog.push(`Awareness campaign: Trust +8, Disease -3 immediate, -4 delayed`);
+                        // Delayed effect after 1 turn: trust +2, disease -2
+                        this.awareness_queue.push(2);
+                        effectsLog.push(`Awareness campaign: Trust +1 immediate, Disease -3 immediate, +2 delayed`);
                         break;
                     case 'repair':
                         this.budget -= 8;
-                        this.roof_integrity = Math.min(100, this.roof_integrity + 20);
+                        // Track if repair had effect before applying
+                        let roofBeforeRepair = this.roof_integrity;
+                        this.roof_integrity = Math.min(this.max_roof_integrity, this.roof_integrity + 10);
                         this.consecutive_ddt_uses = 0;
-                        effectsLog.push(`Repair Thatch: Roof +20`);
+                        if (roofBeforeRepair >= this.max_roof_integrity) {
+                            effectsLog.push(`Repair Thatch: No effect (roof already at max ${this.max_roof_integrity})`);
+                        } else {
+                            let actualIncrease = this.roof_integrity - roofBeforeRepair;
+                            effectsLog.push(`Repair Thatch: Roof +${actualIncrease} (max ${this.max_roof_integrity})`);
+                        }
                         break;
                     
                     case 'grain':
                         this.budget -= 6;
-                        this.grain_stores = Math.min(100, this.grain_stores + 12);
+                        this.grain_stores = Math.min(this.max_grain_stores, this.grain_stores + 10);
                         this.consecutive_ddt_uses = 0;
-                        effectsLog.push(`Protect Grain: Grain +12`);
+                        effectsLog.push(`Protect Grain: Grain +10 (max ${this.max_grain_stores})`);
                         break;
                 }
                 
@@ -3873,7 +3899,9 @@
             html += `🐀${player.rats} `;
             html += `🤒 Malaria:${player.malaria_infected} `;
             html += `🐀Disease:${player.rat_disease_infected} `;
-            html += `❤️ Trust:${player.public_trust}`;
+            html += `❤️ Trust:${player.public_trust} `;
+            html += `🏚️Roof:${player.roof_integrity}/${player.max_roof_integrity} `;
+            html += `🌾Grain:${player.grain_stores}/${player.max_grain_stores}`;
             
             // Add delayed effect narratives
             let delayedNarrative = '';
