@@ -9,7 +9,7 @@ DDT Decision: Borneo Crisis is a turn-based systems-thinking policy game simulat
 
 **Version 2A Update:** Added housing/resource survival layer with Village Health, Roof Integrity, Grain Stores, and a new Repair Thatch action.
 
-**Version 2B Update:** Replaced direct action selection with card-based action economy system.
+**Version 2B Update:** Added hidden ecological chain mechanics (wasps, caterpillars, gecko toxicity) and replaced direct action selection with card-based action economy system.
 
 ### Key Feedback Loops
 
@@ -20,13 +20,15 @@ DDT Decision: Borneo Crisis is a turn-based systems-thinking policy game simulat
 | **R-Loop** | Reinforcing | DDT → cats ↓ → rats ↑ → rat disease ↑ *(unintended!)* |
 | **B-Loop 3 (V2A)** | Balancing | Repair Thatch → roof ↑ → exposure ↓ → village health ↑ |
 | **R-Loop 2 (V2A)** | Reinforcing | Rats ↑ → grain ↓ → starvation ↑ → village health ↓ |
+| **B-Loop 4 (V2B)** | Balancing | Wasps → caterpillars ↓ → roof ↓ *(hidden chain)* |
+| **R-Loop 3 (V2B)** | Reinforcing | DDT → gecko toxicity ↑ → cats ↓ → rats ↑ *(hidden chain)* |
 
 ---
 
 ## 1. Initial Values
 
 | Variable | Starting Value |
-|----------|---------------|
+|----------|-----------------|
 | Turn | 1 |
 | Mosquitoes | 70 |
 | DDT Level | 0 |
@@ -37,10 +39,13 @@ DDT Decision: Borneo Crisis is a turn-based systems-thinking policy game simulat
 | Deaths (Cumulative) | 0 |
 | Deaths This Turn | 0 |
 | Public Trust | 70 |
-| **Budget** | **15** |
+| **Budget** | **10** |
 | **Village Health (V2A)** | 100 |
 | **Roof Integrity (V2A)** | 80 |
 | **Grain Stores (V2A)** | 85 |
+| **Wasps (V2B)** | 55 |
+| **Caterpillars (V2B)** | 15 |
+| **Gecko Toxicity (V2B)** | 0 (hidden) |
 
 ### Delay Queues (Initial)
 
@@ -68,12 +73,13 @@ DDT Decision: Borneo Crisis is a turn-based systems-thinking policy game simulat
 
 ## 3. Card-Based Action System (Version 2B)
 
-The game now uses a card-based action economy system where players build a hand of action cards.
+The game uses a card-based action economy system where players build a hand of action cards.
 
 ### Turn Flow
 
 **Step 1 - Start of Turn:**
-- Budget grows by +5 + 10% interest (rounded up)
+- Budget grows by +3 (flat, no interest)
+- 1 card is automatically drawn (if hand < 6)
 - Hand is always visible
 
 **Step 2 - Choose One:**
@@ -83,7 +89,7 @@ The game now uses a card-based action economy system where players build a hand 
 
 **Step 3 - Select Cards:**
 - Click cards in hand to select/deselect for play
-- Selected cards are highlighted green
+- Selected cards are highlighted
 - Only affordable cards can be selected
 - Can select multiple cards to play in same turn
 
@@ -93,23 +99,24 @@ The game now uses a card-based action economy system where players build a hand 
 - Card effects are applied
 - Turn passes to next player
 
-### Card Types (7 types, equal probability)
+### Card Types (7 types)
 
 | Card | Cost | Effect |
 |------|------|--------|
-| Cat Drop | 15 | Cats +18, Rats -10, Trust +1 |
+| Cat Drop | 15 | Cats +18 (or +9 if cats > 85), Rats -10, Trust +1 |
 | Spray DDT | 12 | Mosquitoes -18, DDT +20, Trust +2 |
-| Awareness | 10 | Trust +8, Malaria -3, Rat Disease -3 |
-| Repair Thatch | 8 | Roof +25, Trust +1 |
-| Protect Grain | 6 | Grain +15, Trust +1 |
+| Awareness | 10 | Trust +8, Malaria -3, Rat Disease -3, Delayed: Mosquitoes -4, Rats -4 |
+| Repair Thatch | 8 | Roof +20, Trust +1 |
+| Protect Grain | 6 | Grain +12, Trust +1 |
 | Bonus Funding | 0 | Budget +15 |
-| Medical Aid | 0 | Malaria -8, Plague -8 |
+| Medical Aid | 0 | Malaria -8 |
 
 ### Hand Rules
 - Maximum hand size: 6 cards
-- Starting hand: 2 cards
-- Starting budget: 15
-- Start-of-turn budget growth: +5 flat
+- Starting hand: 0 cards (auto-draw 1 at start of each turn)
+- **Starting budget: 10**
+- Start-of-turn budget growth: +3 flat
+- Investment bonus: +3 on next turn if +10 budget chosen
 
 ---
 
@@ -139,17 +146,42 @@ Rat Disease → follows rats
 
 **Version 2A: Resource Dynamics**
 ```
-Roof Integrity → degrades naturally
-    roof_integrity = max(0, min(100, roof_integrity - 2))
+Roof Integrity → damaged by caterpillars (V2B: no passive decay)
+    caterpillar_damage = floor(caterpillars / 12)
+    roof_integrity = max(0, min(100, roof_integrity - caterpillar_damage))
 
-Grain Stores → consumed + rat damage (V2A.1 adjusted)
-    grain_loss = 1 + floor(rats / 25)
+Grain Stores → consumed + rat damage (V2B adjusted)
+    grain_loss = 2 + floor(rats / 18)
     grain_stores = max(0, min(100, grain_stores - grain_loss))
 ```
 
+**Version 2B: Ecological Chain (Hidden)**
+```
+Wasps → decline from DDT, recover slowly
+    wasps -= floor(ddt / 10)
+    wasps += 1
+
+Caterpillars → grow when wasps are low
+    if wasps < 30:
+        caterpillars += 2 + floor((30 - wasps) / 10)
+    else:
+        caterpillars += 1
+
+Gecko Toxicity → builds from DDT (hidden variable)
+    if ddt > 5:
+        gecko_toxicity += floor(ddt / 20) + 1
+    else:
+        gecko_toxicity -= 1
+
+Cats → die from eating toxic geckos (hidden pathway)
+    if gecko_toxicity > 35:
+        cats -= floor((gecko_toxicity - 35) / 15) + 1
+```
+
 All variables are clamped after each turn:
-- Mosquitoes, DDT, Malaria, Rat Disease, Public Trust: clamped to **0-100**
-- Village Health, Roof Integrity, Grain Stores (V2A): clamped to **0-100**
+- Mosquitoes, DDT, Malaria, Rat Disease, Public Trust, Wasps, Caterpillars: clamped to **0-100**
+- Village Health, Roof Integrity, Grain Stores: clamped to **0-100**
+- Gecko Toxicity: clamped to **0-100** (hidden)
 - Cats, Rats: **no longer clamped** - can grow beyond 100 based on game dynamics
 
 ---
@@ -162,13 +194,13 @@ Village Health is now the primary survival metric, computed as a STOCK (not reca
 MALARIA HARM = floor(malaria_infected / 25)
 PLAGUE HARM = floor(rat_disease_infected / 20)
 
-STARVATION HARM (only when grain < 40):
+STARVATION HARM (only when grain < 50):
     = floor((40 - grain_stores) / 10) + 1
-    Examples: grain 39→1, grain 30→2, grain 20→3, grain 10→4
+    Examples: grain 49→1, grain 40→1, grain 30→2, grain 20→3
 
-EXPOSURE HARM (only when roof < 40):
-    = floor((40 - roof_integrity) / 12) + 1
-    Examples: roof 39→1, roof 28→2, roof 16→3
+EXPOSURE HARM (only when roof < 50):
+    = floor((50 - roof_integrity) / 10) + 1
+    Examples: roof 49→1, roof 40→2, roof 30→3
 
 RESILIENCE RECOVERY:
     = 1 if public_trust >= 70, else 0
@@ -199,7 +231,6 @@ DEATHS CUMULATIVE += deaths_this_turn
 | Mosquitoes | -floor(18 × compliance) |
 | DDT | +20 |
 | Trust | +2 |
-| Delayed (2 turns) | Push `floor(ddt/12) + 3` to ecology queue |
 | Repeated Use (3×) | Trust -8 |
 
 ### C) Awareness Campaign (V2A)
@@ -216,7 +247,7 @@ DEATHS CUMULATIVE += deaths_this_turn
 |--------|-------|
 | Cost | 8 budget |
 | Trust | +1 |
-| Roof Integrity | +25 immediate |
+| Roof Integrity | +20 immediate |
 | No delayed effects | - |
 
 ### E) Protect Grain (V2A.1)
@@ -224,7 +255,7 @@ DEATHS CUMULATIVE += deaths_this_turn
 |--------|-------|
 | Cost | 6 budget |
 | Trust | +1 |
-| Grain Stores | +15 immediate |
+| Grain Stores | +12 immediate |
 | No delayed effects | - |
 
 ### F) Do Nothing
@@ -246,7 +277,7 @@ DEATHS CUMULATIVE += deaths_this_turn
 | Budget ≥ 10 | Actions Re-enabled |
 | Deaths ≥ 5 | Trust -= floor(deaths / 3) |
 | Deaths < 5 | Trust += 2 |
-| **Trust ≥ 70 (V2A.1)** | Village Health +2 resilience recovery |
+| **Trust ≥ 70** | Village Health +1 resilience recovery |
 
 ---
 
@@ -278,8 +309,8 @@ The health meter now displays **Village Health** as the primary survival metric.
 | Peak Infection | min(20, peak × 0.1) | -20 |
 | Duration | min(15, outbreak × 1.5) | -15 |
 | Eco Collapse | min(20, events × 5) | -20 |
-| **Roof Collapse (V2A)** | 5 if final_roof < 30 | -5 |
-| **Grain Collapse (V2A)** | 5 if final_grain < 30 | -5 |
+| **Roof Collapse** | 5 if final_roof < 30 | -5 |
+| **Grain Collapse** | 5 if final_grain < 30 | -5 |
 
 ### Bonuses
 
@@ -301,7 +332,7 @@ Score = max(0, min(100,
 1. Fewer deaths
 2. Lower peak infection
 3. Higher final trust
-4. **Higher final village health (V2A)**
+4. **Higher final village health**
 
 ---
 
@@ -342,9 +373,9 @@ Score = max(0, min(100,
 | Budget < 0 | End of Turn | Budget=0, Actions Disabled |
 | Consecutive DDT ≥ 3 | DDT Action | Trust -8 (fatigue) |
 | Malaria + Rat Disease > 60 | Each Turn | Counts toward outbreak duration |
-| **Grain < 40 (V2A)** | Each Turn | Starvation harm begins |
-| **Roof < 40 (V2A)** | Each Turn | Exposure harm begins |
-| **Village Health ≤ 0 (V2A)** | Each Turn | Player collapses |
+| **Grain < 50** | Each Turn | Starvation harm begins |
+| **Roof < 50** | Each Turn | Exposure harm begins |
+| **Village Health ≤ 0** | Each Turn | Player collapses |
 
 ---
 
@@ -358,36 +389,39 @@ Each occurrence:
 
 ---
 
-## 13. Version 2A / 2A.1: New Systems Summary
+## 13. Version 2B: Hidden Ecological Chain
 
-### New Variables (V2A)
-- `village_health`: 0-100, starts at 100
-- `roof_integrity`: 0-100, starts at 80
-- `grain_stores`: 0-100, starts at 85 (V2A.1 changed from 75)
+Version 2B introduces hidden ecological consequences that players discover through gameplay:
 
-### Grain Loss Formula (V2A.1 adjusted)
-- Changed from: `2 + floor(rats / 20)`
-- Changed to: `1 + floor(rats / 25)`
+### Hidden Variables (not displayed)
+- **Gecko Toxicity:** Accumulates when DDT is used, builds up in the food chain
+- Starts at 0, accumulates based on DDT level
 
-### Resilience (V2A.1 buffed)
-- Changed from: +1 when trust >= 70
-- Changed to: +2 when trust >= 70
+### Hidden Pathways
+1. **DDT → Wasps:** DDT kills beneficial wasps that control caterpillars
+2. **Wasps → Caterpillars:** Fewer wasps = more caterpillars
+3. **Caterpillars → Roof:** Caterpillars eat thatch, damaging roofs (VISIBLE: roof damage shown)
+4. **DDT → Gecko Toxicity:** DDT accumulates in gecko tissue through bioaccumulation
+5. **Gecko Toxicity → Cats:** Cats eat toxic geckos and die (VISIBLE: cat deaths shown)
 
-### New Harm Pathways (V2A)
-- **Starvation**: When grain stores fall below 40
-- **Exposure**: When roof integrity falls below 40
-- **Resilience**: Small recovery (+1) when trust ≥ 70
-
-### New Action: Repair Thatch (V2A)
-- Cost: 8 budget
-- Effect: +25 roof integrity immediately
-- Trade-off: Budget spent can't be used for disease control
-
-### New Action: Protect Grain (V2A.1)
-- Cost: 6 budget
-- Effect: +15 grain immediately, +1 trust
-- Provides direct grain restoration
+### Player Discovery
+- Roof damage warnings appear when caterpillars increase
+- Cat death warnings appear when gecko toxicity is high
+- Event log messages reveal the hidden chain:
+  - "Wasp populations declining from pesticide exposure"
+  - "Caterpillars multiplying as their predators disappear"
+  - "Toxicity is building in the food chain..."
 
 ---
 
-*Documentation generated from Borneo Crisis game code - Version 2A*
+## 14. Version History
+
+| Version | Changes |
+|---------|---------|
+| **V2A** | Added Village Health, Roof Integrity, Grain Stores, Repair Thatch, Protect Grain actions |
+| **V2A.1** | Adjusted grain loss formula, buffed resilience to +2 |
+| **V2B** | Added card-based economy system, wasps, caterpillars, gecko toxicity (hidden), ecological chain |
+
+---
+
+*Documentation generated from Borneo Crisis game code - Version 2B*

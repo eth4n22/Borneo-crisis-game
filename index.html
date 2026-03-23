@@ -1189,6 +1189,49 @@
             cursor: not-allowed;
         }
         
+        /* Card tooltip */
+        .card-tooltip {
+            position: fixed;
+            z-index: 1000;
+            background: rgba(30, 30, 40, 0.95);
+            border: 1px solid #4a4a5a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            min-width: 180px;
+            max-width: 220px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+        }
+        
+        .card-tooltip .tooltip-name {
+            font-weight: bold;
+            color: #ffd700;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        
+        .card-tooltip .tooltip-cost {
+            color: #2ed573;
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+        }
+        
+        .card-tooltip .tooltip-effect {
+            color: #fff;
+            font-size: 0.75rem;
+            line-height: 1.3;
+            margin-bottom: 6px;
+        }
+        
+        .card-tooltip .tooltip-note {
+            color: #aaa;
+            font-size: 0.7rem;
+            font-style: italic;
+            border-top: 1px solid #444;
+            padding-top: 6px;
+            margin-top: 4px;
+        }
+        
         .card-btn.unaffordable {
             opacity: 0.4;
             cursor: not-allowed;
@@ -1580,7 +1623,7 @@
                     <li><strong>Play Cards:</strong> Click any cards in your hand to select them. Selected cards are queued to play.</li>
                     <li><strong>Confirm Actions:</strong> Press Confirm Actions to resolve your selected cards, then press Next Player to continue.</li>
                 </ol>
-                <p style="margin-top: 12px;">You start with <strong>2 cards</strong> and can hold up to <strong>6 cards</strong>. Most cards cost budget to play.</p>
+                <p style="margin-top: 12px;">You can hold up to <strong>6 cards</strong>. Most cards cost budget to play.</p>
             </div>
             
             <!-- C. WHAT YOU ARE MANAGING -->
@@ -1594,6 +1637,8 @@
                     <li><strong>Rats</strong> — Spread plague AND eat your grain. Too many rats is dangerous.</li>
                     <li><strong>Plague (Rat Disease)</strong> — Directly harms village health based on infection levels.</li>
                     <li><strong>Cats</strong> — Naturally control rat populations. More cats = fewer rats.</li>
+                    <li><strong>Wasps</strong> — Beneficial insects that control caterpillars. DDT harms wasps, leading to caterpillar outbreaks.</li>
+                    <li><strong>Caterpillars</strong> — Eat thatch and damage roofs. Multiply when wasps are low.</li>
                     <li><strong>DDT</strong> — Kills mosquitoes but can harm the ecosystem over time.</li>
                     <li><strong>Roof Integrity</strong> — Low roofs cause exposure harm to village health.</li>
                     <li><strong>Grain Stores</strong> — Low grain causes starvation harm to village health.</li>
@@ -1741,9 +1786,9 @@
                             <tr><th>Card</th><th>Cost</th><th>Effects</th></tr>
                             <tr><td>Spray DDT</td><td>12</td><td>Mosquitoes −18, DDT +20, Trust +2</td></tr>
                             <tr><td>Cat Drop</td><td>15</td><td>Cats +18 (or +9 if cats &gt;85), Rats −10, Trust +1</td></tr>
-                            <tr><td>Awareness</td><td>10</td><td>Trust +8, Malaria −3, Rat Disease −3</td></tr>
-                            <tr><td>Repair Thatch</td><td>8</td><td>Roof +25, Trust +1</td></tr>
-                            <tr><td>Protect Grain</td><td>6</td><td>Grain +15, Trust +1</td></tr>
+                            <tr><td>Awareness</td><td>10</td><td>Trust +3, Malaria −3, Rat Disease −3</td></tr>
+                            <tr><td>Repair Thatch</td><td>8</td><td>Roof +20</td></tr>
+                            <tr><td>Protect Grain</td><td>6</td><td>Grain +12</td></tr>
                             <tr><td>Medical Aid</td><td>5</td><td>Malaria −8, Plague −8</td></tr>
                             <tr><td>Bonus Funding</td><td>0</td><td>Budget +15 (rare)</td></tr>
                         </table>
@@ -1763,8 +1808,8 @@
                     <div class="howto-subsection">
                         <h4>⚠️ Harm Thresholds</h4>
                         <ul>
-                            <li><strong>Starvation:</strong> Only when grain &lt; 40. Formula: floor((40 - grain) / 10) + 1</li>
-                            <li><strong>Exposure:</strong> Only when roof &lt; 40. Formula: floor((40 - roof) / 12) + 1</li>
+                            <li><strong>Starvation:</strong> Only when grain &lt; 50. Formula: floor((40 - grain) / 10) + 1</li>
+                            <li><strong>Exposure:</strong> Only when roof &lt; 50. Formula: floor((50 - roof) / 10) + 1</li>
                             <li><strong>Malaria Harm:</strong> floor(malaria_infected / 25)</li>
                             <li><strong>Plague Harm:</strong> floor(rat_disease_infected / 20)</li>
                             <li><strong>Resilience:</strong> +1 health recovery if trust ≥ 70</li>
@@ -2220,7 +2265,7 @@
                 this.rat_disease_infected += Math.floor((this.rats - this.rat_disease_infected) * 0.20);
                 
                 // Version 2A: Grain Stores - consumed + rat damage
-                let grain_loss = 2 + Math.floor(this.rats / 20);
+                let grain_loss = 2 + Math.floor(this.rats / 18);
                 this.grain_stores = Math.max(0, Math.min(100, this.grain_stores - grain_loss));
                 
                 // Version 2B: Ecological Chain Dynamics
@@ -2390,7 +2435,6 @@
                         let cost = 15;
                         this.budget -= cost;
                         this.total_cat_drops++;
-                        this.public_trust += 1;
                         this.consecutive_ddt_uses = 0;
                         let increase = this.cats > 85 ? 9 : 18;
                         this.cat_drop_queue.push(increase);
@@ -2403,7 +2447,6 @@
                         let mosqRed = Math.floor(18 * compliance);
                         this.mosquitoes -= mosqRed;
                         this.ddt += 20;
-                        this.public_trust += 2;
                         this.consecutive_ddt_uses++;
                         let ecology = Math.floor(this.ddt / 12) + 3;
                         this.ddt_ecology_queue.push(ecology);
@@ -2416,7 +2459,7 @@
                         
                     case 'awareness':
                         this.budget -= 10;
-                        this.public_trust += 8;
+                        this.public_trust += 3;
                         this.malaria_infected = Math.max(0, this.malaria_infected - 3);
                         this.rat_disease_infected = Math.max(0, this.rat_disease_infected - 3);
                         this.consecutive_ddt_uses = 0;
@@ -2426,18 +2469,16 @@
                         
                     case 'repair':
                         this.budget -= 8;
-                        this.roof_integrity = Math.min(100, this.roof_integrity + 25);
-                        this.public_trust += 1;
+                        this.roof_integrity = Math.min(100, this.roof_integrity + 20);
                         this.consecutive_ddt_uses = 0;
-                        effectsLog.push(`Repair Thatch: Roof +25, Trust +1`);
+                        effectsLog.push(`Repair Thatch: Roof +20`);
                         break;
-                        
+                    
                     case 'grain':
                         this.budget -= 6;
-                        this.grain_stores = Math.min(100, this.grain_stores + 15);
-                        this.public_trust += 1;
+                        this.grain_stores = Math.min(100, this.grain_stores + 12);
                         this.consecutive_ddt_uses = 0;
-                        effectsLog.push(`Protect Grain: Grain +15, Trust +1`);
+                        effectsLog.push(`Protect Grain: Grain +12`);
                         break;
                         
                     case 'bonus_funding':
@@ -2467,22 +2508,21 @@
                 this.malaria_harm = Math.floor(this.malaria_infected / 18);
                 this.plague_harm = Math.floor(this.rat_disease_infected / 15);
                 
-                // Starvation harm - only when grain < 45
-                if (this.grain_stores < 45) {
+                // Starvation harm - only when grain < 50
+                if (this.grain_stores < 50) {
                     this.starvation_harm = Math.floor((40 - this.grain_stores) / 10) + 1;
                 } else {
                     this.starvation_harm = 0;
                 }
                 
-                // Exposure harm - only when roof < 40
-                if (this.roof_integrity < 40) {
-                    this.exposure_harm = Math.floor((40 - this.roof_integrity) / 12) + 1;
+                // Exposure harm - only when roof < 50
+                if (this.roof_integrity < 50) {
+                    this.exposure_harm = Math.floor((50 - this.roof_integrity) / 10) + 1;
                 } else {
                     this.exposure_harm = 0;
                 }
                 
-                // Resilience recovery based on trust
-                let resilience_recovery = (this.public_trust >= 70) ? 2 : 0;
+                // Resilience removed - no passive health recovery from trust
                 
                 // Update village health as a stock (from previous value)
                 this.village_health = Math.max(0, Math.min(100,
@@ -2490,8 +2530,7 @@
                     - this.malaria_harm 
                     - this.plague_harm 
                     - this.starvation_harm 
-                    - this.exposure_harm 
-                    + resilience_recovery
+                    - this.exposure_harm
                 ));
                 
                 // Deaths derived from total harm
@@ -2547,17 +2586,16 @@
                         break;
                     case 'repair':
                         this.budget -= 8;
-                        this.roof_integrity = Math.min(100, this.roof_integrity + 25);
-                        this.public_trust += 1;
+                        this.roof_integrity = Math.min(100, this.roof_integrity + 20);
                         this.consecutive_ddt_uses = 0;
-                        effectsLog.push(`Repair Thatch: Roof +25, Trust +1`);
+                        effectsLog.push(`Repair Thatch: Roof +20`);
                         break;
+                    
                     case 'grain':
                         this.budget -= 6;
-                        this.grain_stores = Math.min(100, this.grain_stores + 15);
-                        this.public_trust += 1;
+                        this.grain_stores = Math.min(100, this.grain_stores + 12);
                         this.consecutive_ddt_uses = 0;
-                        effectsLog.push(`Protect Grain: Grain +15, Trust +1`);
+                        effectsLog.push(`Protect Grain: Grain +12`);
                         break;
                 }
                 
@@ -3311,13 +3349,103 @@
             const effects = {
                 'cats': 'Cats +18, Rats -10, Trust +1',
                 'ddt': 'Mosquitoes -18, DDT +20, Trust +2',
-                'awareness': 'Trust +8, Malaria -3, Rat Disease -3',
-                'repair': 'Roof +25, Trust +1',
-                'grain': 'Grain +15, Trust +1',
+                'awareness': 'Trust +3, Malaria -3, Rat Disease -3',
+                'repair': 'Roof +20',
+                'grain': 'Grain +12',
                 'bonus_funding': 'Budget +15',
                 'medical_aid': 'Malaria -8, Plague -8'
             };
             return effects[cardType] || '';
+        }
+        
+        // Helper to get full card summary for tooltips
+        function getCardSummary(cardType) {
+            const summaries = {
+                'cats': {
+                    name: 'Cat Drop',
+                    cost: '15',
+                    effect: 'Adds cats to reduce rats',
+                    note: 'Strong long-term rat control'
+                },
+                'ddt': {
+                    name: 'Spray DDT',
+                    cost: '12',
+                    effect: 'Reduces mosquitoes and malaria quickly',
+                    note: 'May cause delayed ecological harm'
+                },
+                'awareness': {
+                    name: 'Awareness Campaign',
+                    cost: '10',
+                    effect: 'Improves trust and reduces disease pressure',
+                    note: 'Also gives delayed support against mosquitoes/rats'
+                },
+                'repair': {
+                    name: 'Repair Thatch',
+                    cost: '8',
+                    effect: 'Restores roof integrity',
+                    note: 'Helps reduce exposure harm'
+                },
+                'grain': {
+                    name: 'Protect Grain',
+                    cost: '6',
+                    effect: 'Restores grain stores',
+                    note: 'Helps prevent starvation harm'
+                },
+                'bonus_funding': {
+                    name: 'Bonus Funding',
+                    cost: 'Free',
+                    effect: 'Adds budget instantly',
+                    note: 'Rare support card'
+                },
+                'medical_aid': {
+                    name: 'Medical Aid',
+                    cost: '5',
+                    effect: 'Reduces malaria and plague immediately',
+                    note: 'Fast relief, but does not fix root causes'
+                }
+            };
+            return summaries[cardType] || { name: cardType, cost: '?', effect: '', note: '' };
+        }
+        
+        // Show tooltip for a card
+        function showCardTooltip(cardType, event) {
+            const summary = getCardSummary(cardType);
+            let tooltip = document.getElementById('cardTooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'cardTooltip';
+                tooltip.className = 'card-tooltip';
+                document.body.appendChild(tooltip);
+            }
+            tooltip.innerHTML = `
+                <div class="tooltip-name">${summary.name}</div>
+                <div class="tooltip-cost">Cost: ${summary.cost}</div>
+                <div class="tooltip-effect">${summary.effect}</div>
+                <div class="tooltip-note">${summary.note}</div>
+            `;
+            
+            // Position tooltip near the card
+            const rect = event.target.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            let left = rect.left + (rect.width / 2) - 100;
+            let top = rect.top - 80;
+            
+            // Keep tooltip within viewport
+            if (left < 10) left = 10;
+            if (left + 200 > window.innerWidth) left = window.innerWidth - 210;
+            if (top < 10) top = rect.bottom + 10;
+            
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.style.display = 'block';
+        }
+        
+        // Hide tooltip
+        function hideCardTooltip() {
+            const tooltip = document.getElementById('cardTooltip');
+            if (tooltip) {
+                tooltip.style.display = 'none';
+            }
         }
         
         // Show card draw animation
@@ -3434,6 +3562,25 @@
                 let costText = cost > 0 ? ` (${cost})` : ' (Free)';
                 
                 cardBtn.innerHTML = `<span class="card-icon">${getCardIcon(cardType)}</span><span class="card-name">${cardName}</span><span class="card-cost">${costText}</span>`;
+                
+                // Add tooltip events for hover (desktop)
+                cardBtn.onmouseenter = (e) => showCardTooltip(cardType, e);
+                cardBtn.onmouseleave = hideCardTooltip;
+                
+                // Mobile: long press (500ms) to show tooltip
+                let touchTimer = null;
+                cardBtn.ontouchstart = (e) => {
+                    touchTimer = setTimeout(() => {
+                        showCardTooltip(cardType, e);
+                        setTimeout(hideCardTooltip, 2000);
+                    }, 500);
+                };
+                cardBtn.ontouchend = (e) => {
+                    if (touchTimer) {
+                        clearTimeout(touchTimer);
+                        touchTimer = null;
+                    }
+                };
                 
                 // Click toggles selection (not immediate play)
                 // Selected cards are ALWAYS clickable for deselection
