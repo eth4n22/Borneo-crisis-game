@@ -1351,6 +1351,8 @@
             display: block;
             background: rgba(0,0,0,0.2);
             border-radius: 6px;
+            image-rendering: pixelated;
+            image-rendering: -webkit-optimize-contrast;
         }
         
         .forecast-legend {
@@ -2311,6 +2313,15 @@
             </div>
             
             <div class="chart-section">
+                <h3>📈 Wasp & Caterpillar Populations</h3>
+                <div class="player-chart-select">
+                    <select id="ecologyPlayerSelect" onchange="updateEcologyChart()"></select>
+                    <button class="btn-compare" onclick="toggleCompareEcology()">Compare All Players</button>
+                </div>
+                <canvas id="ecologyChart"></canvas>
+            </div>
+            
+            <div class="chart-section">
                 <h3>📈 Deaths Over Time</h3>
                 <div class="player-chart-select">
                     <select id="deathsPlayerSelect" onchange="updateDeathsChart()"></select>
@@ -2897,11 +2908,12 @@
         let lastPlayerIndexAtRoundEnd = -1;
         let actionsConfirmed = false; // Track if actions have been confirmed for current turn
         let diseaseChart = null, populationChart = null, deathsChart = null;
-        let villageChart = null, resourceChart = null;
+        let villageChart = null, resourceChart = null, ecologyChart = null;
         let globalMaxDeaths = 50; // For consistent Y-axis across all players
         // Compare all players mode flags
         let compareDisease = false;
         let comparePopulation = false;
+        let compareEcology = false;
         let compareDeaths = false;
         let compareVillage = false;
         let compareResource = false;
@@ -3562,13 +3574,13 @@
         // Helper to get effect description for cards
         function getCardEffectDescription(cardType) {
             const effects = {
-                'cats': 'Cats +18, Rats -10, Trust +1',
-                'ddt': 'Mosquitoes -18, DDT +20, Trust +2',
-                'awareness': 'Trust +3, Malaria -3, Rat Disease -3',
-                'repair': 'Roof +20',
-                'grain': 'Grain +12',
+                'cats': 'Cats +9-18 (delayed), Rats -10 (delayed)',
+                'ddt': 'Mosquitoes -18*compliance, DDT +20, DDT fatigue (3+ uses)',
+                'awareness': 'Trust +1, Malaria -3, Rat Disease -3, +2 delayed',
+                'repair': 'Roof +10',
+                'grain': 'Grain +10',
                 'bonus_funding': 'Budget +15',
-                'medical_aid': 'Malaria -8, Plague -8'
+                'medical_aid': 'Malaria -6, Plague -6'
             };
             return effects[cardType] || '';
         }
@@ -3614,7 +3626,7 @@
                 },
                 'medical_aid': {
                     name: 'Medical Aid',
-                    cost: '5',
+                    cost: '8',
                     effect: 'Reduces malaria and plague immediately',
                     note: 'Fast relief, but does not fix root causes'
                 }
@@ -3774,11 +3786,14 @@
                 deaths_cumulative: player.deaths_cumulative,
                 turn: player.turn,
                 
-                // Delayed effects queue
-                ddt_queue: player.ddt_queue ? [...player.ddt_queue] : [],
-                trust_queue: player.trust_queue ? [...player.trust_queue] : [],
-                delayed_wasp_deaths: player.delayed_wasp_deaths || 0,
-                delayed_caterpillar_spawn: player.delayed_caterpillar_spawn || 0
+                // Card tracking
+                consecutive_ddt_uses: player.consecutive_ddt_uses || 0,
+                
+                // Delayed effects queues (match actual game queues)
+                ddt_ecology_queue: player.ddt_ecology_queue ? [...player.ddt_ecology_queue] : [],
+                cat_drop_queue: player.cat_drop_queue ? [...player.cat_drop_queue] : [],
+                awareness_queue: player.awareness_queue ? [...player.awareness_queue] : [],
+                rat_control_queue: player.rat_control_queue ? [...player.rat_control_queue] : []
             };
         }
         
@@ -3791,13 +3806,9 @@
             state.malaria_infected += Math.floor((state.mosquitoes - state.malaria_infected) * 0.25);
             state.rat_disease_infected += Math.floor((state.rats - state.rat_disease_infected) * 0.20);
             
-            // Grain consumption
+            // Grain consumption (no passive recovery)
             let grain_loss = 2 + Math.floor(state.rats / 18);
             state.grain_stores = Math.max(0, state.grain_stores - grain_loss);
-            
-            // Roof damage from caterpillars
-            let roof_damage = Math.floor(state.caterpillars / 10);
-            state.roof_integrity = Math.max(0, state.roof_integrity - roof_damage);
             
             // Trust decay
             state.public_trust = Math.max(0, state.public_trust - 1);
@@ -3805,39 +3816,98 @@
             return state;
         }
         
-        // Simulate card effects - must match actual game card effects exactly
+        // Simulate ecological effects - matches real game applyEcologicalEffects
+        function simulateEcologicalEffects(state) {
+            // --- WASP DYNAMICS ---
+            // DDT reduces wasps, wasps recover slowly
+            state.wasps -= Math.floor(state.ddt / 10);
+            state.wasps += 1;  // natural growth
+            state.wasps = Math.max(0, Math.min(100, state.wasps));
+            
+            // --- CATERPILLAR DYNAMICS ---
+            // Caterpillars grow faster when wasps are low
+            if (state.wasps < 30) {
+                state.caterpillars += 2 + Math.floor((30 - state.wasps) / 10);
+            } else {
+                state.caterpillars += 1;  // base growth
+            }
+            state.caterpillars = Math.max(0, Math.min(100, state.caterpillars));
+            
+            // --- CATERPILLAR ROOF DAMAGE ---
+            // Roof damage is purely caterpillar-driven
+            let caterpillar_damage = Math.floor(state.caterpillars / 10);
+            state.roof_integrity = Math.max(0, Math.min(100, state.roof_integrity - caterpillar_damage));
+            
+            // --- GECKO TOXICITY BUILDUP ---
+            // DDT bioaccumulates in the food chain
+            if (state.ddt > 5) {
+                state.gecko_toxicity += Math.floor(state.ddt / 20) + 1;
+            } else {
+                state.gecko_toxicity -= 1;
+            }
+            state.gecko_toxicity = Math.max(0, Math.min(100, state.gecko_toxicity));
+            
+            // --- CAT HARM FROM TOXIC PREY ---
+            // Cats die when consuming contaminated prey
+            if (state.gecko_toxicity > 35) {
+                let cat_toxicity_loss = Math.floor((state.gecko_toxicity - 35) / 15) + 1;
+                state.cats -= cat_toxicity_loss;
+            }
+            
+            return state;
+        }
+        
+        // Simulate card effects - matches actual game playCard() logic exactly
+        // Note: This applies IMMEDIATE effects only. Delayed effects are handled in simulateDelayedEffects.
         function simulateCardEffects(state, cardType) {
+            const compliance = state.public_trust < 25 ? 0.7 : 1.0;
+            
             switch(cardType) {
                 case 'repair':
-                    // Repair Thatch: Roof +20
-                    state.roof_integrity = Math.min(state.max_roof_integrity, state.roof_integrity + 20);
+                    // Repair Thatch: Roof +10 (capped at max_roof_integrity)
+                    state.roof_integrity = Math.min(state.max_roof_integrity, state.roof_integrity + 10);
+                    state.consecutive_ddt_uses = 0;
                     break;
                 case 'grain':
-                    // Protect Grain: Grain +12
-                    state.grain_stores = Math.min(state.max_grain_stores, state.grain_stores + 12);
+                    // Protect Grain: Grain +10 (capped at max_grain_stores)
+                    state.grain_stores = Math.min(state.max_grain_stores, state.grain_stores + 10);
+                    state.consecutive_ddt_uses = 0;
                     break;
                 case 'medical_aid':
-                    // Medical Aid: Malaria -8, Plague -8
-                    state.malaria_infected = Math.max(0, state.malaria_infected - 8);
-                    state.rat_disease_infected = Math.max(0, state.rat_disease_infected - 8);
+                    // Medical Aid: Malaria -6, Plague -6
+                    state.malaria_infected = Math.max(0, state.malaria_infected - 6);
+                    state.rat_disease_infected = Math.max(0, state.rat_disease_infected - 6);
                     break;
                 case 'awareness':
-                    // Awareness: Trust +3, Malaria -3, Rat Disease -3
-                    state.public_trust = Math.min(100, state.public_trust + 3);
+                    // Awareness: Trust +1, Malaria -3, Rat Disease -3, +2 delayed
+                    state.public_trust = Math.min(100, state.public_trust + 1);
                     state.malaria_infected = Math.max(0, state.malaria_infected - 3);
                     state.rat_disease_infected = Math.max(0, state.rat_disease_infected - 3);
+                    state.consecutive_ddt_uses = 0;
+                    // Queue delayed effect (handled in simulateDelayedEffects)
+                    state.awareness_queue.push(2);
                     break;
                 case 'ddt':
-                    // Spray DDT: Mosquitoes -18, DDT +20, Trust +2
-                    state.mosquitoes = Math.max(0, state.mosquitoes - 18);
+                    // Spray DDT: Mosquitoes -18*compliance, DDT +20, consecutive use tracking
+                    let mosqRed = Math.floor(18 * compliance);
+                    state.mosquitoes = Math.max(0, state.mosquitoes - mosqRed);
                     state.ddt = Math.min(100, state.ddt + 20);
-                    state.public_trust = Math.min(100, state.public_trust + 2);
+                    state.public_trust = Math.min(100, state.public_trust + 2); // +2 from spray
+                    state.consecutive_ddt_uses++;
+                    // Queue ecology harm (handled in simulateDelayedEffects)
+                    let ecology = Math.floor(state.ddt / 12) + 3;
+                    state.ddt_ecology_queue.push(ecology);
+                    // DDT fatigue: if 3+ consecutive uses, trust penalty
+                    if (state.consecutive_ddt_uses >= 3) {
+                        state.public_trust = Math.max(0, state.public_trust - 8);
+                    }
                     break;
                 case 'cats':
-                    // Cat Drop: Cats +18, Rats -10, Trust +1
-                    state.cats += 18;
-                    state.rats = Math.max(0, state.rats - 10);
-                    state.public_trust = Math.min(100, state.public_trust + 1);
+                    // Cat Drop: Cats +9 if >85, else +18 (queue for delayed effect), Trust +1 immediate
+                    let increase = state.cats > 85 ? 9 : 18;
+                    state.cat_drop_queue.push(increase);
+                    state.public_trust = Math.min(100, state.public_trust + 1); // Trust +1 immediate
+                    state.consecutive_ddt_uses = 0;
                     break;
                 case 'bonus_funding':
                     // Bonus Funding: Budget +15
@@ -3847,53 +3917,40 @@
             return state;
         }
         
-        // Simulate ecological chain effects (simplified version)
-        function simulateEcologicalEffects(state) {
-            // DDT → wasps
-            if (state.ddt > 30) {
-                state.wasps = Math.max(0, state.wasps - 5);
-            }
-            
-            // Wasps → caterpillars (inverse)
-            if (state.wasps < 30) {
-                state.caterpillars = Math.min(100, state.caterpillars + 8);
-            }
-            
-            // Caterpillars → roof damage
-            // Already handled in natural dynamics
-            
-            // DDT → gecko → cats → rats chain
-            if (state.ddt > 20) {
-                state.gecko_toxicity = Math.min(100, state.gecko_toxicity + 5);
-            }
-            
-            if (state.gecko_toxicity > 40) {
-                state.cats = Math.max(0, state.cats - 2);
-            }
-            
-            if (state.cats < 20) {
-                state.rats += 5;
-            }
-            
-            return state;
-        }
-        
-        // Simulate delayed effects
+        // Simulate delayed effects - matches actual game applyDelayedEffects() logic
         function simulateDelayedEffects(state) {
-            // Process DDT delayed effects
-            if (state.ddt_queue && state.ddt_queue.length > 0) {
-                state.ddt_queue.forEach(ddt_amount => {
-                    state.ddt = Math.min(100, state.ddt + ddt_amount);
-                });
-                state.ddt_queue = [];
+            const compliance = state.public_trust < 25 ? 0.7 : 1.0;
+            
+            // Process DDT ecology delayed effects (cats die, rats increase)
+            let ecology_hit = state.ddt_ecology_queue.shift() || 0;
+            if (ecology_hit > 0) {
+                state.cats -= ecology_hit;
+                state.rats += Math.floor(ecology_hit / 2);
             }
             
-            // Process trust delayed effects
-            if (state.trust_queue && state.trust_queue.length > 0) {
-                state.trust_queue.forEach(trust_change => {
-                    state.public_trust = Math.max(0, Math.min(100, state.public_trust + trust_change));
-                });
-                state.trust_queue = [];
+            // Process cat drop delayed effects (cats increase, rats decrease)
+            let cat_increase = state.cat_drop_queue.shift() || 0;
+            if (cat_increase > 0) {
+                let actual = Math.floor(cat_increase * compliance);
+                state.cats += actual;
+                state.rats = Math.max(0, state.rats - 10); // Rats -10 when cat drop resolves
+            }
+            
+            // Process rat control delayed effects (rats decrease, cats decrease, trust decrease)
+            let rat_reduction = state.rat_control_queue.shift() || 0;
+            if (rat_reduction > 0) {
+                let actual = Math.floor(rat_reduction * compliance);
+                state.rats -= actual;
+                state.cats -= 3;
+                state.public_trust -= 2;
+            }
+            
+            // Process awareness delayed effects (mosquitoes and rats decrease)
+            let awareness_reduction = state.awareness_queue.shift() || 0;
+            if (awareness_reduction > 0) {
+                let actual = Math.floor(awareness_reduction * compliance);
+                state.mosquitoes -= actual;
+                state.rats -= actual;
             }
             
             return state;
@@ -3918,35 +3975,43 @@
             return state;
         }
         
-        // Compute deaths based on current state
+        // Simulate trust updates - matches actual game updateTrust() logic
+        function simulateTrust(state) {
+            // Base trust decay of -1 each turn (already applied in simulateNaturalDynamics)
+            // Death penalty: if deaths >= 5, apply additional trust penalty
+            if (state.deaths_this_turn >= 5) {
+                state.public_trust -= Math.floor(state.deaths_this_turn / 3);
+            }
+            // Clamp after trust adjustments
+            state.public_trust = Math.max(0, Math.min(100, state.public_trust));
+            return state;
+        }
+        
+        // Compute deaths and village health based on current state - matches real game logic
         function simulateComputeDeaths(state) {
-            let deaths = 0;
+            // Calculate harm values (same as real game)
+            let malaria_harm = Math.floor(state.malaria_infected / 15);
+            let plague_harm = Math.floor(state.rat_disease_infected / 12);
             
-            // Disease deaths
-            if (state.malaria_infected > 50) {
-                deaths += Math.floor((state.malaria_infected - 50) / 25);
-            }
-            if (state.rat_disease_infected > 50) {
-                deaths += Math.floor((state.rat_disease_infected - 50) / 25);
-            }
-            
-            // Starvation
-            if (state.grain_stores < 30) {
-                deaths += Math.floor((30 - state.grain_stores) / 10);
+            // Starvation harm (when grain < 50)
+            let starvation_harm = 0;
+            if (state.grain_stores < 50) {
+                starvation_harm = Math.floor((50 - state.grain_stores) / 8) + 1;
             }
             
-            // Exposure
-            if (state.roof_integrity < 30) {
-                deaths += Math.floor((30 - state.roof_integrity) / 10);
+            // Exposure harm (when roof < 50)
+            let exposure_harm = 0;
+            if (state.roof_integrity < 50) {
+                exposure_harm = Math.floor((50 - state.roof_integrity) / 8) + 1;
             }
             
-            state.deaths_this_turn = deaths;
-            state.deaths_cumulative += deaths;
+            // Total harm = deaths_this_turn (same as real game)
+            let total_harm = malaria_harm + plague_harm + starvation_harm + exposure_harm;
+            state.deaths_this_turn = total_harm;
+            state.deaths_cumulative += total_harm;
             
-            // Village health impact
-            if (deaths > 0) {
-                state.village_health = Math.max(0, state.village_health - deaths * 5);
-            }
+            // Village health decreases by total harm each turn (same as real game)
+            state.village_health = Math.max(0, Math.min(100, state.village_health - total_harm));
             
             return state;
         }
@@ -4020,6 +4085,9 @@
                 // Compute deaths
                 simState = simulateComputeDeaths(simState);
                 
+                // Update trust (includes death penalty)
+                simState = simulateTrust(simState);
+                
                 // Clamp
                 simState = simulateClamp(simState);
                 
@@ -4047,19 +4115,20 @@
             const ctx1 = healthCanvas.getContext('2d');
             const ctx2 = resourcesCanvas.getContext('2d');
             
-            // Set canvas size (for retina displays)
-            const dpr = window.devicePixelRatio || 1;
-            healthCanvas.width = healthCanvas.offsetWidth * dpr;
-            healthCanvas.height = healthCanvas.offsetHeight * dpr;
-            resourcesCanvas.width = resourcesCanvas.offsetWidth * dpr;
-            resourcesCanvas.height = resourcesCanvas.offsetHeight * dpr;
-            ctx1.scale(dpr, dpr);
-            ctx2.scale(dpr, dpr);
-            
+            // Use canvas offset size for sharp rendering
             const width1 = healthCanvas.offsetWidth;
             const height1 = healthCanvas.offsetHeight;
             const width2 = resourcesCanvas.offsetWidth;
             const height2 = resourcesCanvas.offsetHeight;
+            
+            // Only proceed if canvas has valid dimensions
+            if (width1 <= 0 || height1 <= 0 || width2 <= 0 || height2 <= 0) return;
+            
+            // Set canvas internal resolution to match display size
+            healthCanvas.width = width1;
+            healthCanvas.height = height1;
+            resourcesCanvas.width = width2;
+            resourcesCanvas.height = height2;
             
             // Clear canvases with subtle background
             ctx1.fillStyle = 'rgba(0,0,0,0.15)';
@@ -5030,7 +5099,26 @@
                     labels: labels,
                     datasets: [
                         { label: 'Cats', data: log.cats, borderColor: '#2ed573', fill: false, tension: 0.3 },
-                        { label: 'Rats', data: log.rats, borderColor: '#ff6b81', fill: false, tension: 0.3 },
+                        { label: 'Rats', data: log.rats, borderColor: '#ff6b81', fill: false, tension: 0.3 }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: '#aaa', font: { size: 10 } } } },
+                    scales: { 
+                        x: { title: { display: true, text: 'Turn', color: '#888' }, ticks: { color: '#888', font: { size: 9 } } }, 
+                        y: { title: { display: true, text: 'Population', color: '#888' }, min: 0, max: 150, ticks: { color: '#888', font: { size: 9 } } } 
+                    } 
+                }
+            });
+            
+            // New ecology chart for Wasps & Caterpillars
+            ecologyChart = new Chart(document.getElementById('ecologyChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
                         { label: 'Wasps', data: log.wasps, borderColor: '#f39c12', fill: false, tension: 0.3 },
                         { label: 'Caterpillars', data: log.caterpillars, borderColor: '#9b59b6', fill: false, tension: 0.3 }
                     ]
@@ -5224,6 +5312,7 @@
         
         function toggleComparePopulation() {
             comparePopulation = !comparePopulation;
+            // Population chart is at index 1 (Cats/Rats)
             document.querySelectorAll('.chart-section')[1].querySelector('.btn-compare').classList.toggle('active', comparePopulation);
             if (comparePopulation) {
                 updatePopulationChartCompareAll();
@@ -5232,9 +5321,21 @@
             }
         }
         
+        function toggleCompareEcology() {
+            compareEcology = !compareEcology;
+            document.querySelectorAll('.chart-section')[2].querySelector('.btn-compare').classList.toggle('active', compareEcology);
+            if (compareEcology) {
+                updateEcologyChartCompareAll();
+            } else {
+                updateEcologyChart();
+            }
+        }
+        
         function toggleCompareDeaths() {
             compareDeaths = !compareDeaths;
-            document.querySelectorAll('.chart-section')[2].querySelector('.btn-compare').classList.toggle('active', compareDeaths);
+            // Deaths chart is now at index 3 (after adding ecology chart)
+            let chartIndex = document.querySelectorAll('.chart-section').length - 4;
+            document.querySelectorAll('.chart-section')[chartIndex].querySelector('.btn-compare').classList.toggle('active', compareDeaths);
             if (compareDeaths) {
                 updateDeathsChartCompareAll();
             } else {
@@ -5330,6 +5431,68 @@
             populationChart.data.labels = labels;
             populationChart.data.datasets = datasets;
             populationChart.update();
+        }
+        
+        function updateEcologyChart() {
+            let select = document.getElementById('ecologyPlayerSelect');
+            let playerIdx = parseInt(select.value);
+            let player = players[playerIdx];
+            let log = player.dataLog;
+            
+            let labels = [];
+            for (let i = 0; i < log.turn.length; i++) {
+                labels.push('T' + log.turn[i]);
+            }
+            
+            ecologyChart.data.labels = labels;
+            ecologyChart.data.datasets = [
+                { label: 'Wasps', data: log.wasps, borderColor: '#f39c12', fill: false, tension: 0.3 },
+                { label: 'Caterpillars', data: log.caterpillars, borderColor: '#9b59b6', fill: false, tension: 0.3 }
+            ];
+            ecologyChart.update();
+        }
+        
+        function updateEcologyChartCompareAll() {
+            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
+            let refLog = players[0].dataLog;
+            let labels = [];
+            for (let i = 0; i < refLog.turn.length; i++) {
+                let turnNum = refLog.turn[i];
+                let actionEntry = players[0].actionHistory.find(a => a.turn === turnNum);
+                let action = actionEntry ? actionEntry.action : '';
+                let symbol = actionSymbols[action] || '';
+                let playerRound = Math.ceil(turnNum / numPlayers);
+                let roundEvt = roundEvents.find(e => e.round === playerRound);
+                let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
+                labels.push('T' + turnNum + symbol + eventTag);
+            }
+            
+            let datasets = [];
+            let colors = ['#ff4757', '#ffa502', '#2ed573', '#00d4ff'];
+            players.forEach((p, idx) => {
+                // Wasps - solid line
+                datasets.push({
+                    label: p.name + ' - Wasps',
+                    data: p.dataLog.wasps,
+                    borderColor: colors[idx % colors.length],
+                    borderDash: [],
+                    fill: false,
+                    tension: 0.3
+                });
+                // Caterpillars - dashed line
+                datasets.push({
+                    label: p.name + ' - Caterpillars',
+                    data: p.dataLog.caterpillars,
+                    borderColor: colors[idx % colors.length],
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.3
+                });
+            });
+            
+            ecologyChart.data.labels = labels;
+            ecologyChart.data.datasets = datasets;
+            ecologyChart.update();
         }
         
         function updateDeathsChartCompareAll() {
