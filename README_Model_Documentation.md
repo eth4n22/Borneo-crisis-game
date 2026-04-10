@@ -1,15 +1,17 @@
-# DDT Decision: Borneo Crisis
-## Model Documentation
+# Fixes That Fail: The Borneo Simulation
+## UTC2703 - Model Documentation
 
 ---
 
 ## Overview
 
-DDT Decision: Borneo Crisis is a turn-based systems-thinking policy game simulating the 1950s Borneo DDT spraying campaign. Players manage disease control across 12 turns (representing 24 months), making decisions that affect mosquitoes, cats, rats, malaria, and rat disease levels.
+Fixes That Fail: The Borneo Simulation is a turn-based systems-thinking policy game simulating the 1950s Borneo DDT spraying campaign. Players manage disease control across 12 turns (representing 24 months), making decisions that affect mosquitoes, cats, rats, malaria, and rat disease levels.
 
 **Version 2A Update:** Added housing/resource survival layer with Village Health, Roof Integrity, Grain Stores, and a new Repair Thatch action.
 
 **Version 2B Update:** Added hidden ecological chain mechanics (wasps, caterpillars, gecko toxicity) and replaced direct action selection with card-based action economy system.
+
+**Game by:** Ethan, Clement, Isabella
 
 ### Key Feedback Loops
 

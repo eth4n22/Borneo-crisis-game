@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DDT Decision: Borneo Crisis - Multiplayer</title>
+    <title>Fixes That Fail: The Borneo Simulation - UTC2703</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -14,15 +14,17 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(to bottom, #0f172a, #1e293b);
             min-height: 100vh;
+            margin: 0;
             color: #e0e0e0;
-            padding: 15px;
         }
         
         .container {
             max-width: 1600px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
         
         .screen {
@@ -33,33 +35,33 @@
             display: block;
         }
         
-        /* Card styling */
-        .card {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .card h2 {
-            font-size: 1rem;
-            color: #00d4ff;
-            margin-bottom: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.15);
-            padding-bottom: 8px;
-        }
-        
         /* START SCREEN */
-        .start-screen {
-            text-align: center;
-            padding: 40px 20px;
+        #startScreen {
+            display: none;
         }
         
-        .start-screen .hero-art {
-            font-size: 4rem;
-            margin-bottom: 10px;
-            animation: float 3s ease-in-out infinite;
+        #startScreen.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .start-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .player-select, .btn, .player-select select {
+            position: relative;
+            z-index: 3;
         }
         
         @keyframes float {
@@ -67,89 +69,153 @@
             50% { transform: translateY(-10px); }
         }
         
+        .start-screen .hero-art {
+            font-size: 3rem;
+            letter-spacing: 6px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+            transition: transform 0.3s ease;
+        }
+        
+        .start-screen .hero-art:hover {
+            transform: scale(1.05);
+        }
+        
         .start-screen h1 {
             font-size: 2rem;
             color: #00d4ff;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
         }
         
         .start-screen .subtitle {
             color: #888;
-            font-size: 1rem;
-            margin-bottom: 25px;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
         }
         
         .start-screen .description {
-            max-width: 550px;
-            margin: 0 auto 25px;
-            color: #aaa;
-            line-height: 1.5;
+            max-width: 450px;
+            margin: 0 auto 30px;
+            color: #999;
+            line-height: 1.6;
             font-size: 0.9rem;
         }
         
+        .start-screen .credits {
+            color: #666;
+            font-size: 0.75rem;
+            margin-top: 24px;
+        }
+        
         .player-select {
-            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
         }
         
         .player-select label {
-            font-size: 1rem;
-            color: #fff;
-            margin-right: 12px;
+            font-size: 0.95rem;
+            color: #aaa;
         }
         
         .player-select select {
-            padding: 8px 15px;
+            padding: 12px 24px;
             font-size: 1rem;
-            border-radius: 6px;
+            border-radius: 8px;
             border: 2px solid #00d4ff;
-            background: #1a1a2e;
+            background: #1e293b;
             color: #fff;
             cursor: pointer;
+            min-width: 200px;
+            text-align: center;
         }
         
         .btn {
-            padding: 12px 30px;
+            padding: 14px 40px;
             font-size: 1rem;
             font-weight: bold;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
         
         .btn-primary {
             background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-            color: #1a1a2e;
+            color: #0f172a;
+            min-width: 200px;
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0,212,255,0.3);
+            transform: scale(1.03);
+            filter: brightness(1.1);
         }
         
         .btn-info {
             background: transparent;
             border: 2px solid #00d4ff;
             color: #00d4ff;
-            margin-left: 10px;
+            margin-top: 12px;
+            min-width: 200px;
         }
         
         .btn-info:hover {
             background: rgba(0,212,255,0.1);
+            transform: scale(1.03);
         }
         
         /* HOW TO PLAY SCREEN */
         .howto-screen {
-            padding: 30px 20px;
-            max-width: 700px;
-            margin: 0 auto;
+            padding: 20px;
         }
         
-        .howto-screen h2 {
-            font-size: 1.8rem;
-            color: #00d4ff;
+        .howto-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .howto-title {
             text-align: center;
-            margin-bottom: 25px;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .howto-card {
+            background: rgba(15, 23, 42, 0.85);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .howto-card h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: #00d4ff;
+        }
+        
+        .howto-card p,
+        .howto-card li {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #e2e8f0;
+        }
+        
+        .howto-card ul {
+            margin-left: 20px;
+        }
+        
+        .howto-footer {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
         }
         
         .howto-section {
@@ -1727,307 +1793,114 @@
     <div class="container">
         <!-- START SCREEN -->
         <div id="startScreen" class="screen start-screen active">
-            <div class="hero-art">🐱🪂🦟</div>
-            <h1>DDT Decision: Borneo Crisis</h1>
-            <p class="subtitle">Multiplayer Systems Policy Game</p>
-            <p class="description">
-                Turn-based simulation based on the Borneo DDT/cat drop story. 
-                Each player manages their own crisis for 12 turns. Make strategic decisions 
-                to control disease while managing ecological consequences.
-            </p>
-            <div class="player-select">
-                <label>Players:</label>
-                <select id="playerCount">
-                    <option value="2">2 Players</option>
-                    <option value="3">3 Players</option>
-                    <option value="4">4 Players</option>
-                </select>
+            <div class="start-container">
+                <div class="hero-art">🐱🪂🦟</div>
+                <h1>Fixes That Fail: The Borneo Simulation</h1>
+                <p class="subtitle">UTC2703 - Multiplayer Systems Policy Game</p>
+                <p class="description">
+                    Turn-based simulation based on the Borneo DDT/cat drop story. 
+                    Each player manages their own crisis for 12 turns. Make strategic decisions 
+                    to control disease while managing ecological consequences.
+                </p>
+                <div class="player-select">
+                    <label>Players:</label>
+                    <select id="playerCount">
+                        <option value="2">2 Players</option>
+                        <option value="3">3 Players</option>
+                        <option value="4">4 Players</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="goToNameScreen()">Next</button>
+                <button class="btn btn-info" onclick="showHowToPlay()">How to Play</button>
+                <p class="credits">Game done by Ethan, Clement, Isabelle</p>
             </div>
-            <button class="btn btn-primary" onclick="goToNameScreen()">Next</button>
-            
-            <button class="btn btn-info" onclick="showHowToPlay()">How to Play</button>
         </div>
         
         <!-- HOW TO PLAY SCREEN -->
         <div id="howToPlayScreen" class="screen howto-screen">
-            <h2>📖 How to Play</h2>
-            
-            <div style="text-align: center; margin-bottom: 15px;">
-                <a href="#" onclick="showScreen('startScreen'); return false;" style="color: #00d4ff; text-decoration: underline; font-size: 0.95rem; font-weight: bold;">← Back to Start</a>
-            </div>
-            
-            <!-- A. OBJECTIVE -->
-            <div class="howto-section">
-                <h3>🎯 A. Objective</h3>
-                <p>Your goal is to get the highest score (0–100) by managing disease control while protecting your village. You have <strong>12 turns</strong> — make each one count!</p>
-                <p>Balance is essential: disease, ecosystem, housing, food supply, budget, and community trust all affect your final score.</p>
-            </div>
-            
-            <!-- B. TURN STRUCTURE -->
-            <div class="howto-section">
-                <h3>🔄 B. Turn Structure</h3>
-                <p>Every turn follows this simple flow:</p>
-                <ol style="margin-left: 20px; line-height: 2;">
-                    <li><strong>Start of Turn:</strong> You automatically receive <strong>+3 budget</strong>. If you chose +10 last turn, you also receive a <strong>+3 investment bonus</strong>.</li>
-                    <li><strong>Auto-Draw:</strong> You automatically draw 1 card at the start of each turn.</li>
-                    <li><strong>Choose One:</strong> Either take <em>+10 Budget</em> right now, OR draw 1 extra card. (You cannot do both.)</li>
-                    <li><strong>Play Cards:</strong> Click any cards in your hand to select them. Selected cards are queued to play.</li>
-                    <li><strong>Confirm Actions:</strong> Press Confirm Actions to resolve your selected cards, then press Next Player to continue.</li>
-                </ol>
-                <p style="margin-top: 12px;">You can hold up to <strong>6 cards</strong>. Most cards cost budget to play.</p>
-            </div>
-            
-            <!-- C. WHAT YOU ARE MANAGING -->
-            <div class="howto-section">
-                <h3>🏘️ C. What You Are Managing</h3>
-                <p>These are the key variables in the game:</p>
-                <ul style="line-height: 1.9; margin-top: 10px;">
-                    <li><strong>Village Health</strong> — Your main survival metric. If it reaches 0, your village collapses.</li>
-                    <li><strong>Mosquitoes</strong> — Drive malaria risk. More mosquitoes = more disease.</li>
-                    <li><strong>Malaria</strong> — Directly harms village health based on infection levels.</li>
-                    <li><strong>Rats</strong> — Spread plague AND eat your grain. Too many rats is dangerous.</li>
-                    <li><strong>Plague (Rat Disease)</strong> — Directly harms village health based on infection levels.</li>
-                    <li><strong>Cats</strong> — Naturally control rat populations. More cats = fewer rats.</li>
-                    <li><strong>Wasps</strong> — Beneficial insects that control caterpillars. DDT harms wasps, leading to caterpillar outbreaks.</li>
-                    <li><strong>Caterpillars</strong> — Eat thatch and damage roofs. Multiply when wasps are low.</li>
-                    <li><strong>DDT</strong> — Kills mosquitoes but can harm the ecosystem over time.</li>
-                    <li><strong>Roof Integrity</strong> — Low roofs cause exposure harm to village health.</li>
-                    <li><strong>Grain Stores</strong> — Low grain causes starvation harm to village health.</li>
-                    <li><strong>Public Trust</strong> — High trust (70+) gives a resilience bonus. Low trust weakens your actions.</li>
-                    <li><strong>Budget</strong> — Required to play most cards. Manage it carefully!</li>
-                </ul>
-            </div>
-            
-            <!-- D. THE CARDS -->
-            <div class="howto-section">
-                <h3>🎴 D. The Cards</h3>
-                <p>Here are all the cards you can draw and play:</p>
+            <div class="howto-container">
+                <h1 class="howto-title">How to Play</h1>
                 
-                <!-- Spray DDT -->
-                <div class="action-guide-card">
-                    <div class="action-guide-header ddt-action">
-                        <span class="action-icon">💧</span>
-                        <span class="action-name">Spray DDT — Cost: 12</span>
-                    </div>
-                    <div class="action-guide-body">
-                        <p><strong>Primary Effect:</strong> Instantly reduces mosquitoes and adds DDT to the ecosystem.</p>
-                        <p><strong>Trade-off:</strong> High DDT levels can harm cat populations, which may cause rat populations to explode later.</p>
-                        <p><strong>Delay:</strong> Ecological effects appear after 2 turns.</p>
-                        <p><strong>Value:</strong> Fast, powerful disease control — but use sparingly to avoid ecological backlash.</p>
-                    </div>
+                <div class="howto-footer">
+                    <button class="btn btn-info" onclick="showScreen('startScreen')">← Back to Start</button>
                 </div>
                 
-                <!-- Cat Drop -->
-                <div class="action-guide-card">
-                    <div class="action-guide-header cats-action">
-                        <span class="action-icon">🐱</span>
-                        <span class="action-name">Cat Drop — Cost: 15</span>
-                    </div>
-                    <div class="action-guide-body">
-                        <p><strong>Primary Effect:</strong> Adds cats to the ecosystem to hunt rats.</p>
-                        <p><strong>Trade-off:</strong> High cost. Effects are delayed by 1 turn.</p>
-                        <p><strong>Value:</strong> Effective long-term rat control. Helps prevent plague and protects grain.</p>
-                    </div>
+                <div class="howto-card">
+                    <h2>🎯 Objective</h2>
+                    <p>Your goal is to get the highest score (0–100) by managing disease control while protecting your village. You have <strong>12 turns</strong> — make each one count!</p>
+                    <p>Balance is essential: disease, ecosystem, housing, food supply, budget, and community trust all affect your final score.</p>
                 </div>
                 
-                <!-- Awareness Campaign -->
-                <div class="action-guide-card">
-                    <div class="action-guide-header awareness-action">
-                        <span class="action-icon">📢</span>
-                        <span class="action-name">Awareness Campaign — Cost: 10</span>
-                    </div>
-                    <div class="action-guide-body">
-                        <p><strong>Primary Effect:</strong> Greatly boosts public trust and provides immediate reductions to both malaria and plague.</p>
-                        <p><strong>Trade-off:</strong> Also reduces mosquitoes and rats after 1 turn delay.</p>
-                        <p><strong>Value:</strong> A solid all-around choice that improves trust and reduces disease pressure.</p>
-                    </div>
+                <div class="howto-card">
+                    <h2>🔄 Turn Flow</h2>
+                    <ul>
+                        <li><strong>Start of Turn:</strong> You automatically receive <strong>+3 budget</strong>. If you chose +10 last turn, you also receive a <strong>+3 investment bonus</strong>.</li>
+                        <li><strong>Auto-Draw:</strong> You automatically draw 1 card at the start of each turn.</li>
+                        <li><strong>Choose One:</strong> Either take <em>+10 Budget</em> right now, OR draw 1 extra card. (You cannot do both.)</li>
+                        <li><strong>Play Cards:</strong> Click any cards in your hand to select them. Selected cards are queued to play.</li>
+                        <li><strong>Confirm Actions:</strong> Press Confirm Actions to resolve your selected cards, then press Next Player to continue.</li>
+                    </ul>
+                    <p>You can hold up to <strong>6 cards</strong>. Most cards cost budget to play.</p>
                 </div>
                 
-                <!-- Repair Thatch -->
-                <div class="action-guide-card">
-                    <div class="action-guide-header repair-action">
-                        <span class="action-icon">🏚️</span>
-                        <span class="action-name">Repair Thatch — Cost: 8</span>
-                    </div>
-                    <div class="action-guide-body">
-                        <p><strong>Primary Effect:</strong> Instantly improves roof integrity.</p>
-                        <p><strong>Trade-off:</strong> Does not affect disease directly.</p>
-                        <p><strong>Value:</strong> Essential for protecting against exposure harm. No delay — immediate results.</p>
-                    </div>
+                <div class="howto-card">
+                    <h2>🏘️ Key Mechanics</h2>
+                    <ul>
+                        <li><strong>Village Health</strong> — Your main survival metric. If it reaches 0, your village collapses.</li>
+                        <li><strong>Mosquitoes</strong> — Drive malaria risk. More mosquitoes = more disease.</li>
+                        <li><strong>Malaria</strong> — Directly harms village health based on infection levels.</li>
+                        <li><strong>Rats</strong> — Spread plague AND eat your grain. Too many rats is dangerous.</li>
+                        <li><strong>Cats</strong> — Naturally control rat populations. More cats = fewer rats.</li>
+                        <li><strong>Wasps</strong> — Beneficial insects that control caterpillars. DDT harms wasps.</li>
+                        <li><strong>Caterpillars</strong> — Eat thatch and damage roofs. Multiply when wasps are low.</li>
+                        <li><strong>Roof Integrity</strong> — Low roofs cause exposure harm to village health.</li>
+                        <li><strong>Grain Stores</strong> — Low grain causes starvation harm to village health.</li>
+                        <li><strong>Public Trust</strong> — High trust (70+) gives a resilience bonus.</li>
+                        <li><strong>Budget</strong> — Required to play most cards. Manage it carefully!</li>
+                    </ul>
                 </div>
                 
-                <!-- Protect Grain -->
-                <div class="action-guide-card">
-                    <div class="action-guide-header grain-action">
-                        <span class="action-icon">🌾</span>
-                        <span class="action-name">Protect Grain — Cost: 6</span>
-                    </div>
-                    <div class="action-guide-body">
-                        <p><strong>Primary Effect:</strong> Instantly adds grain stores.</p>
-                        <p><strong>Trade-off:</strong> Does not affect disease directly.</p>
-                        <p><strong>Value:</strong> One of the more affordable cards. Great for preventing starvation harm.</p>
-                    </div>
+                <div class="howto-card">
+                    <h2>📊 The Cards</h2>
+                    <ul>
+                        <li><strong>Spray DDT (12)</strong> — Reduces mosquitoes instantly. Harmful to cats long-term.</li>
+                        <li><strong>Cat Drop (15)</strong> — Adds cats to hunt rats. Delayed 1 turn.</li>
+                        <li><strong>Awareness Campaign (10)</strong> — Boosts trust, reduces malaria and plague.</li>
+                        <li><strong>Repair Thatch (8)</strong> — Instantly improves roof integrity.</li>
+                        <li><strong>Protect Grain (6)</strong> — Instantly adds grain stores.</li>
+                        <li><strong>Medical Aid (5)</strong> — Reduces both malaria and plague pressure.</li>
+                        <li><strong>Bonus Funding (Free)</strong> — Adds +15 budget. Rare card.</li>
+                    </ul>
                 </div>
                 
-                <!-- Medical Aid -->
-                <div class="action-guide-card">
-                    <div class="action-guide-header medical-action">
-                        <span class="action-icon">🏥</span>
-                        <span class="action-name">Medical Aid — Cost: 5</span>
-                    </div>
-                    <div class="action-guide-body">
-                        <p><strong>Primary Effect:</strong> Instantly reduces both malaria and plague pressure.</p>
-                        <p><strong>Trade-off:</strong> Lower cost means lower immediate impact than some options.</p>
-                        <p><strong>Value:</strong> Affordable immediate relief from disease pressure.</p>
-                    </div>
+                <div class="howto-card">
+                    <h2>💡 Strategy Tips</h2>
+                    <ul>
+                        <li><strong>Plan Ahead:</strong> Many card effects don't happen immediately. DDT takes 2 turns; cat drops take 1 turn.</li>
+                        <li><strong>Balance Everything:</strong> Overusing one option causes problems. DDT kills mosquitoes but harms cats → rats multiply → more plague!</li>
+                        <li><strong>Roof & Grain Are Vital:</strong> Disease isn't the only threat. Low roofs cause exposure harm. Low grain causes starvation harm.</li>
+                        <li><strong>Trust Matters:</strong> At 70+ trust, your village gets a +1 health recovery each turn.</li>
+                        <li><strong>Investment Strategy:</strong> Choosing +10 budget gives you a +3 bonus next turn.</li>
+                    </ul>
                 </div>
                 
-                <!-- Bonus Funding -->
-                <div class="action-guide-card">
-                    <div class="action-guide-header bonus-action">
-                        <span class="action-icon">💰</span>
-                        <span class="action-name">Bonus Funding — Cost: Free</span>
-                    </div>
-                    <div class="action-guide-body">
-                        <p><strong>Primary Effect:</strong> Instantly adds +15 to your budget.</p>
-                        <p><strong>Trade-off:</strong> Appears less frequently than other cards.</p>
-                        <p><strong>Value:</strong> Free budget boost — especially useful when you need funds for expensive cards.</p>
-                    </div>
+                <div class="howto-card">
+                    <h2>🏆 Winning the Game</h2>
+                    <p>Your final score (0–100) comes from:</p>
+                    <ul>
+                        <li><strong>Deaths:</strong> Keep them low — biggest factor (max +60 bonus)</li>
+                        <li><strong>Infection Peak:</strong> Lower peak infections earn points (max +20)</li>
+                        <li><strong>Outbreak Duration:</strong> Shorter outbreaks score better (max +15)</li>
+                        <li><strong>Ecological Balance:</strong> Avoid eco collapse (max +20)</li>
+                        <li><strong>Trust & Budget:</strong> Small end-game bonuses</li>
+                        <li><strong>Housing & Food:</strong> Keep roof and grain above 30 (max +5 each)</li>
+                    </ul>
+                </div>
+                
+                <div class="howto-footer">
+                    <button class="btn btn-info" onclick="showScreen('startScreen')">← Back to Start</button>
                 </div>
             </div>
-            
-            <!-- E. DELAYED EFFECTS & STRATEGY -->
-            <div class="howto-section">
-                <h3>⏱️ E. Delayed Effects & Strategy</h3>
-                <ul style="line-height: 1.9;">
-                    <li><strong>Plan Ahead:</strong> Many card effects don't happen immediately. DDT takes 2 turns; cat drops take 1 turn.</li>
-                    <li><strong>Balance Everything:</strong> Overusing one option causes problems. DDT kills mosquitoes but harms cats → rats multiply → more disease!</li>
-                    <li><strong>Roof & Grain Are Vital:</strong> Disease isn't the only threat. Low roofs cause exposure harm. Low grain causes starvation harm.</li>
-                    <li><strong>Trust Matters:</strong> At 70+ trust, your village gets a +1 health recovery each turn.</li>
-                    <li><strong>Investment Strategy:</strong> Choosing +10 budget gives you a +3 bonus next turn. Build up your economy or expand your options!</li>
-                </ul>
-                <p style="margin-top: 10px; text-align: center; color: #888;">💡 <em>Quick Loop: DDT → fewer mosquitoes → but may → fewer cats → more rats → more plague + grain loss → village hurt!</em></p>
-            </div>
-            
-            <!-- F. WINNING THE GAME -->
-            <div class="howto-section">
-                <h3>🏆 F. Winning the Game</h3>
-                <p>Your final score (0–100) comes from bonuses and penalties:</p>
-                <ul style="line-height: 1.9; margin-top: 10px;">
-                    <li><strong>Deaths:</strong> Keep them low — this is the biggest factor (max +60 bonus)</li>
-                    <li><strong>Infection Peak:</strong> Lower peak infections earn points (max +20)</li>
-                    <li><strong>Outbreak Duration:</strong> Shorter outbreaks score better (max +15)</li>
-                    <li><strong>Ecological Balance:</strong> Avoid eco collapse (cats &lt;20 AND rats &gt;80) for +20</li>
-                    <li><strong>Trust & Budget:</strong> Small end-game bonuses for high trust and budget</li>
-                    <li><strong>Housing & Food:</strong> Keep final roof and grain above 30 for +5 each</li>
-                </ul>
-            </div>
-            
-            <!-- G. ADVANCED DETAILS (Collapsible) -->
-            <div class="howto-section collapsible-section">
-                <h3 onclick="toggleAdvancedDetails()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                    <span>📊 G. Advanced Details</span>
-                    <span id="advancedToggleIcon" style="font-size: 1.2rem;">▼</span>
-                </h3>
-                <div id="advancedDetails" class="advanced-content" style="display: none;">
-                    
-                    <div class="howto-subsection">
-                        <h4>🎴 Exact Card Values</h4>
-                        <table class="howto-table">
-                            <tr><th>Card</th><th>Cost</th><th>Effects</th></tr>
-                            <tr><td>Spray DDT</td><td>12</td><td>Mosquitoes −18, DDT +20, Trust +2</td></tr>
-                            <tr><td>Cat Drop</td><td>15</td><td>Cats +18 (or +9 if cats &gt;85), Rats −10, Trust +1</td></tr>
-                            <tr><td>Awareness</td><td>10</td><td>Trust +2, Malaria −3, Rat Disease −3 (delayed +2)</td></tr>
-                            <tr><td>Repair Thatch</td><td>8</td><td>Roof +10 (to max 80)</td></tr>
-                            <tr><td>Protect Grain</td><td>6</td><td>Grain +10 (to max 85)</td></tr>
-                            <tr><td>Medical Aid</td><td>8</td><td>Malaria −6, Plague −6</td></tr>
-                            <tr><td>Bonus Funding</td><td>0</td><td>Budget +15 (rare)</td></tr>
-                        </table>
-                    </div>
-                    
-                    <div class="howto-subsection">
-                        <h4>📏 Realism: Roof & Grain Caps</h4>
-                        <ul>
-                            <li><strong>Roof Integrity:</strong> Cannot exceed base capacity (80). Repair restores damage up to this maximum.</li>
-                            <li><strong>Grain Stores:</strong> Cannot exceed base storage (85). Protect restores grain up to this maximum.</li>
-                            <li>This represents each village's original construction quality and storage capacity.</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="howto-subsection">
-                        <h4>💰 Budget System</h4>
-                        <ul>
-                            <li><strong>Starting Budget:</strong> 10</li>
-                            <li><strong>Turn Growth:</strong> +3 flat at start of each turn</li>
-                            <li><strong>Investment Bonus:</strong> +3 next turn if you chose +10 budget</li>
-                            <li><strong>Auto-Draw:</strong> 1 card drawn automatically each turn</li>
-                            <li><strong>Choose One:</strong> +10 budget OR draw 1 extra card</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="howto-subsection">
-                        <h4>⚠️ Harm Thresholds</h4>
-                        <ul>
-                            <li><strong>Starvation:</strong> Only when grain &lt; 50. Formula: floor((50 - grain) / 8) + 1</li>
-                            <li><strong>Exposure:</strong> Only when roof &lt; 50. Formula: floor((50 - roof) / 8) + 1</li>
-                            <li><strong>Malaria Harm:</strong> floor(malaria_infected / 15)</li>
-                            <li><strong>Plague Harm:</strong> floor(rat_disease_infected / 12)</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="howto-subsection">
-                        <h4>🎲 Random Events</h4>
-                        <table class="howto-table">
-                            <tr><th>Event</th><th>Chance</th><th>Effects</th></tr>
-                            <tr><td>🌧️ Monsoon</td><td>10%</td><td>Mosquitoes +15, Malaria +5, Trust −2</td></tr>
-                            <tr><td>🐀 Rodent Migration</td><td>6%</td><td>Rats +20, Rat Disease +5, Cats −3</td></tr>
-                            <tr><td>📰 DDT Scandal</td><td>5%</td><td>Trust −10 (if DDT &gt;40), else −4</td></tr>
-                            <tr><td>🧹 Clean-Up</td><td>5%</td><td>Rats −10, Rat Disease −5, Trust +6</td></tr>
-                            <tr><td>🏥 WHO Funding</td><td>~20%</td><td>Budget +25, Trust +3 (guaranteed once, rounds 7-9)</td></tr>
-                        </table>
-                    </div>
-                    
-                    <div class="howto-subsection">
-                        <h4>🔧 Technical Details</h4>
-                        <ul>
-                            <li><strong>Trust Threshold:</strong> Below 25 = 70% action effectiveness</li>
-                            <li><strong>Trust Resilience:</strong> 70+ trust = +1 health recovery each turn</li>
-                            <li><strong>Eco Collapse:</strong> Cats &lt; 20 AND Rats &gt; 80 = −20 score penalty</li>
-                            <li><strong>Delay Times:</strong> DDT = 2 turns, Cat/Rat/Awareness = 1 turn</li>
-                            <li><strong>DDT Fatigue:</strong> Using DDT 3× in a row = −8 trust</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="howto-subsection">
-                        <h4>🌿 Ecological Chain (Version 2B)</h4>
-                        <p style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">DDT creates unintended consequences through ecological pathways:</p>
-                        <ul>
-                            <li><strong>DDT → Wasps:</strong> DDT harms wasp populations</li>
-                            <li><strong>Wasps → Caterpillars:</strong> Fewer wasps = caterpillars multiply</li>
-                            <li><strong>Caterpillars → Roof:</strong> Caterpillars damage thatch roofs</li>
-                            <li><strong>DDT → Food Chain:</strong> DDT accumulates in prey (hidden toxicity)</li>
-                            <li><strong>Toxicity → Cats:</strong> Cats sickened by contaminated prey</li>
-                            <li><strong>Fewer Cats → Rats:</strong> Less predation = rat population growth</li>
-                            <li><strong>Rats → Problems:</strong> More rats = more plague and grain loss</li>
-                        </ul>
-                    </div>
-                    
-                </div>
-            </div>
-            
-            <script>
-                function toggleAdvancedDetails() {
-                    var content = document.getElementById('advancedDetails');
-                    var icon = document.getElementById('advancedToggleIcon');
-                    if (content.style.display === 'none') {
-                        content.style.display = 'block';
-                        icon.textContent = '▲';
-                    } else {
-                        content.style.display = 'none';
-                        icon.textContent = '▼';
-                    }
-                }
-            </script>
         </div>
         
         <!-- NAME SCREEN -->
@@ -2047,7 +1920,7 @@
         <div id="gameScreen" class="screen">
             <!-- Header -->
             <div class="game-header">
-                <h1>DDT Decision: Borneo Crisis</h1>
+                <h1>Fixes That Fail: The Borneo Simulation</h1>
                 <div class="player-indicator" id="playerIndicator"></div>
                 <div class="score-so-far" id="scoreSoFar"></div>
                 <div class="round-indicator" id="roundIndicator">Round 1</div>
