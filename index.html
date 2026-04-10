@@ -5026,7 +5026,7 @@
                 </tr>`;
             });
             
-            ['diseasePlayerSelect', 'populationPlayerSelect', 'deathsPlayerSelect', 'villagePlayerSelect', 'resourcePlayerSelect'].forEach(selId => {
+            ['diseasePlayerSelect', 'populationPlayerSelect', 'ecologyPlayerSelect', 'deathsPlayerSelect', 'villagePlayerSelect', 'resourcePlayerSelect'].forEach(selId => {
                 document.getElementById(selId).innerHTML = players.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
             });
             
@@ -5039,6 +5039,15 @@
             if (deathsChart) deathsChart.destroy();
             if (villageChart) villageChart.destroy();
             if (resourceChart) resourceChart.destroy();
+            if (ecologyChart) ecologyChart.destroy();
+            
+            // Reset all compare modes
+            compareDisease = false;
+            comparePopulation = false;
+            compareEcology = false;
+            compareDeaths = false;
+            compareVillage = false;
+            compareResource = false;
             
             let player = players[0];
             let log = player.dataLog;
@@ -5268,7 +5277,7 @@
             // Reset compare mode if active
             if (compareDeaths) {
                 compareDeaths = false;
-                document.querySelectorAll('.chart-section')[2].querySelector('.btn-compare').classList.remove('active');
+                document.querySelectorAll('.chart-section')[3].querySelector('.btn-compare').classList.remove('active');
             }
             let idx = parseInt(document.getElementById('deathsPlayerSelect').value);
             let p = players[idx];
@@ -5333,9 +5342,8 @@
         
         function toggleCompareDeaths() {
             compareDeaths = !compareDeaths;
-            // Deaths chart is now at index 3 (after adding ecology chart)
-            let chartIndex = document.querySelectorAll('.chart-section').length - 4;
-            document.querySelectorAll('.chart-section')[chartIndex].querySelector('.btn-compare').classList.toggle('active', compareDeaths);
+            // Deaths chart is at index 3
+            document.querySelectorAll('.chart-section')[3].querySelector('.btn-compare').classList.toggle('active', compareDeaths);
             if (compareDeaths) {
                 updateDeathsChartCompareAll();
             } else {
@@ -5434,6 +5442,11 @@
         }
         
         function updateEcologyChart() {
+            // Reset compare mode if active
+            if (compareEcology) {
+                compareEcology = false;
+                document.querySelectorAll('.chart-section')[2].querySelector('.btn-compare').classList.remove('active');
+            }
             let select = document.getElementById('ecologyPlayerSelect');
             let playerIdx = parseInt(select.value);
             let player = players[playerIdx];
@@ -5543,7 +5556,7 @@
         function updateVillageChart() {
             if (compareVillage) {
                 compareVillage = false;
-                document.querySelectorAll('.chart-section')[3].querySelector('.btn-compare').classList.remove('active');
+                document.querySelectorAll('.chart-section')[4].querySelector('.btn-compare').classList.remove('active');
             }
             let idx = parseInt(document.getElementById('villagePlayerSelect').value);
             let p = players[idx];
@@ -5569,7 +5582,7 @@
         
         function toggleCompareVillage() {
             compareVillage = !compareVillage;
-            document.querySelectorAll('.chart-section')[3].querySelector('.btn-compare').classList.toggle('active', compareVillage);
+            document.querySelectorAll('.chart-section')[4].querySelector('.btn-compare').classList.toggle('active', compareVillage);
             if (compareVillage) {
                 updateVillageChartCompareAll();
             } else {
@@ -5607,7 +5620,7 @@
         function updateResourceChart() {
             if (compareResource) {
                 compareResource = false;
-                document.querySelectorAll('.chart-section')[4].querySelector('.btn-compare').classList.remove('active');
+                document.querySelectorAll('.chart-section')[5].querySelector('.btn-compare').classList.remove('active');
             }
             let idx = parseInt(document.getElementById('resourcePlayerSelect').value);
             let p = players[idx];
@@ -5634,7 +5647,7 @@
         
         function toggleCompareResource() {
             compareResource = !compareResource;
-            document.querySelectorAll('.chart-section')[4].querySelector('.btn-compare').classList.toggle('active', compareResource);
+            document.querySelectorAll('.chart-section')[5].querySelector('.btn-compare').classList.toggle('active', compareResource);
             if (compareResource) {
                 updateResourceChartCompareAll();
             } else {
