@@ -218,6 +218,49 @@
             margin-top: 20px;
         }
         
+        .cards-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .card-entry {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        
+        .card-icon {
+            font-size: 1.4rem;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .card-content {
+            flex: 1;
+        }
+        
+        .card-header {
+            font-weight: bold;
+            font-size: 15px;
+            color: #e2e8f0;
+        }
+        
+        .card-cost {
+            font-size: 12px;
+            color: #00d4ff;
+            margin-left: 8px;
+        }
+        
+        .card-desc {
+            font-size: 13px;
+            color: #aaa;
+            margin-top: 4px;
+        }
+        
         .howto-section {
             background: rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.1);
@@ -1862,15 +1905,57 @@
                 
                 <div class="howto-card">
                     <h2>📊 The Cards</h2>
-                    <ul>
-                        <li><strong>Spray DDT (12)</strong> — Reduces mosquitoes instantly. Harmful to cats long-term.</li>
-                        <li><strong>Cat Drop (15)</strong> — Adds cats to hunt rats. Delayed 1 turn.</li>
-                        <li><strong>Awareness Campaign (10)</strong> — Boosts trust, reduces malaria and plague.</li>
-                        <li><strong>Repair Thatch (8)</strong> — Instantly improves roof integrity.</li>
-                        <li><strong>Protect Grain (6)</strong> — Instantly adds grain stores.</li>
-                        <li><strong>Medical Aid (5)</strong> — Reduces both malaria and plague pressure.</li>
-                        <li><strong>Bonus Funding (Free)</strong> — Adds +15 budget. Rare card.</li>
-                    </ul>
+                    <div class="cards-list">
+                        <div class="card-entry">
+                            <div class="card-icon">💧</div>
+                            <div class="card-content">
+                                <div class="card-header">Spray DDT <span class="card-cost">Cost: 12</span></div>
+                                <div class="card-desc">Reduces mosquitoes instantly. Harmful to cats long-term.</div>
+                            </div>
+                        </div>
+                        <div class="card-entry">
+                            <div class="card-icon">🐱</div>
+                            <div class="card-content">
+                                <div class="card-header">Cat Drop <span class="card-cost">Cost: 15</span></div>
+                                <div class="card-desc">Adds cats to hunt rats. Delayed 1 turn.</div>
+                            </div>
+                        </div>
+                        <div class="card-entry">
+                            <div class="card-icon">📢</div>
+                            <div class="card-content">
+                                <div class="card-header">Awareness Campaign <span class="card-cost">Cost: 10</span></div>
+                                <div class="card-desc">Boosts trust, reduces malaria and plague.</div>
+                            </div>
+                        </div>
+                        <div class="card-entry">
+                            <div class="card-icon">🏚️</div>
+                            <div class="card-content">
+                                <div class="card-header">Repair Thatch <span class="card-cost">Cost: 8</span></div>
+                                <div class="card-desc">Instantly improves roof integrity.</div>
+                            </div>
+                        </div>
+                        <div class="card-entry">
+                            <div class="card-icon">🌾</div>
+                            <div class="card-content">
+                                <div class="card-header">Protect Grain <span class="card-cost">Cost: 6</span></div>
+                                <div class="card-desc">Instantly adds grain stores.</div>
+                            </div>
+                        </div>
+                        <div class="card-entry">
+                            <div class="card-icon">🏥</div>
+                            <div class="card-content">
+                                <div class="card-header">Medical Aid <span class="card-cost">Cost: 5</span></div>
+                                <div class="card-desc">Reduces both malaria and plague pressure.</div>
+                            </div>
+                        </div>
+                        <div class="card-entry">
+                            <div class="card-icon">💰</div>
+                            <div class="card-content">
+                                <div class="card-header">Bonus Funding <span class="card-cost">Free</span></div>
+                                <div class="card-desc">Adds +15 budget. Rare card.</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="howto-card">
