@@ -2359,6 +2359,9 @@
                 this.caterpillars = 15;
                 this.gecko_toxicity = 0;
                 
+                // DDT activation queue (1 turn delay before taking effect)
+                this.ddt_activation_queue = [0];
+                
                 // Internal harm tracking (for logging)
                 this.malaria_harm = 0;
                 this.plague_harm = 0;
@@ -2424,8 +2427,34 @@
             }
             
             applyNaturalDynamics() {
+                // Process DDT activation (1 turn delay)
+                let ddt_activation = this.ddt_activation_queue.shift() || 0;
+                let justActivated = false;
+                if (ddt_activation > 0) {
+                    this.ddt += ddt_activation; // Accumulate, don't overwrite
+                    justActivated = true;
+                }
+                
+                // Apply DDT effects BEFORE decay (uses full DDT value)
+                if (this.ddt > 0) {
+                    // Mosquito reduction scales with DDT level
+                    this.mosquitoes -= Math.floor(this.ddt * 0.4);
+                    
+                    // Gecko toxicity scales with DDT level
+                    this.gecko_toxicity += Math.floor(this.ddt / 15) + 2;
+                }
+                
+                // Wasp damage scales with DDT level
+                this.wasps -= Math.floor(this.ddt / 10);
+                this.wasps += 1;
+                this.wasps = Math.max(0, Math.min(100, this.wasps));
+                
+                // Decay DDT only if not the activation turn
+                if (!justActivated) {
+                    this.ddt = Math.max(0, this.ddt - 5);
+                }
+                
                 this.mosquitoes += Math.round((60 - this.mosquitoes) * 0.10);
-                this.ddt = Math.max(0, this.ddt - 8);
                 this.cats += 1 - Math.floor(this.rats / 25);
                 this.rats += 4 + Math.floor((50 - this.cats) / 20);
                 this.malaria_infected += Math.floor((this.mosquitoes - this.malaria_infected) * 0.25);
@@ -2434,13 +2463,6 @@
                 // Version 2A: Grain Stores - consumed + rat damage
                 let grain_loss = 2 + Math.floor(this.rats / 18);
                 this.grain_stores = Math.max(0, Math.min(100, this.grain_stores - grain_loss));
-                
-                // Version 2B: Ecological Chain Dynamics
-                // --- WASP DYNAMICS ---
-                // DDT reduces wasps, wasps recover slowly
-                this.wasps -= Math.floor(this.ddt / 10);
-                this.wasps += 1;
-                this.wasps = Math.max(0, Math.min(100, this.wasps));
                 
                 // --- CATERPILLAR DYNAMICS ---
                 // Caterpillars grow faster when wasps are low
@@ -2455,15 +2477,6 @@
                 // Roof damage is now purely caterpillar-driven (removed passive decay)
                 let caterpillar_damage = Math.floor(this.caterpillars / 10);
                 this.roof_integrity = Math.max(0, Math.min(100, this.roof_integrity - caterpillar_damage));
-                
-                // --- GECKO TOXICITY BUILDUP ---
-                // DDT bioaccumulates in the food chain
-                if (this.ddt > 5) {
-                    this.gecko_toxicity += Math.floor(this.ddt / 20) + 1;
-                } else {
-                    this.gecko_toxicity -= 1;
-                }
-                this.gecko_toxicity = Math.max(0, Math.min(100, this.gecko_toxicity));
                 
                 // --- CAT HARM FROM TOXIC PREY ---
                 // Cats die when consuming contaminated prey
@@ -2611,13 +2624,11 @@
                     case 'ddt':
                         let costDdt = 12;
                         this.budget -= costDdt;
-                        let mosqRed = Math.floor(18 * compliance);
-                        this.mosquitoes -= mosqRed;
-                        this.ddt += 20;
+                        this.ddt_activation_queue.push(20); // 1 turn delay before DDT activates
                         this.consecutive_ddt_uses++;
-                        let ecology = Math.floor(this.ddt / 12) + 3;
-                        this.ddt_ecology_queue.push(ecology);
-                        effectsLog.push(`Spray DDT: Mosq -${mosqRed}, DDT +20`);
+                        // Queue ecology damage for 2 turns later (based on activation value)
+                        this.ddt_ecology_queue.push(Math.floor(20 / 12) + 3);
+                        effectsLog.push(`Spray DDT: Queued for activation next turn`);
                         if (this.consecutive_ddt_uses >= 3) {
                             this.public_trust -= 8;
                             effectsLog.push(`DDT fatigue: Trust -8`);
@@ -3407,8 +3418,8 @@
             player.computeDeaths();
             player.updateTrust();
             player.clamp();
-            player.turn++;
             player.recordTurn();
+            player.turn++;
             
             // Log end of turn
             let logEntry = document.createElement('div');
@@ -3757,19 +3768,73 @@
         
         // Simulate natural dynamics (same as player's applyNaturalDynamics)
         function simulateNaturalDynamics(state) {
+            // Process DDT activation (1 turn delay)
+            let ddt_activation = state.ddt_activation_queue ? state.ddt_activation_queue.shift() || 0 : 0;
+            let justActivated = false;
+            if (ddt_activation > 0) {
+                state.ddt = (state.ddt || 0) + ddt_activation;
+                justActivated = true;
+            }
+            
+            // Apply DDT effects BEFORE decay
+            if (state.ddt > 0) {
+                state.mosquitoes -= Math.floor(state.ddt * 0.4);
+                state.gecko_toxicity = (state.gecko_toxicity || 0) + Math.floor(state.ddt / 15) + 2;
+            }
+            
+            // Wasp damage
+            state.wasps = (state.wasps || 55) - Math.floor(state.ddt / 10) + 1;
+            state.wasps = Math.max(0, Math.min(100, state.wasps));
+            
+            // Decay DDT only if not activation turn
+            if (!justActivated) {
+                state.ddt = Math.max(0, (state.ddt || 0) - 5);
+            }
+            
             state.mosquitoes += Math.round((60 - state.mosquitoes) * 0.10);
-            state.ddt = Math.max(0, state.ddt - 8);
             state.cats += 1 - Math.floor(state.rats / 25);
             state.rats += 4 + Math.floor((50 - state.cats) / 20);
             state.malaria_infected += Math.floor((state.mosquitoes - state.malaria_infected) * 0.25);
             state.rat_disease_infected += Math.floor((state.rats - state.rat_disease_infected) * 0.20);
             
-            // Grain consumption (no passive recovery)
+            // Grain consumption
             let grain_loss = 2 + Math.floor(state.rats / 18);
-            state.grain_stores = Math.max(0, state.grain_stores - grain_loss);
+            state.grain_stores = Math.max(0, Math.min(100, state.grain_stores - grain_loss));
             
             // Trust decay
             state.public_trust = Math.max(0, state.public_trust - 1);
+            
+            return state;
+        }
+        
+        // Simulate ecological effects - matches real game applyEcologicalEffects
+        function simulateEcologicalEffects(state) {
+            // --- WASP DYNAMICS ---
+            // DDT reduces wasps, wasps recover slowly
+            state.wasps -= Math.floor(state.ddt / 10);
+            state.wasps += 1;
+            state.wasps = Math.max(0, Math.min(100, state.wasps));
+            
+            // --- CATERPILLAR DYNAMICS ---
+            // Caterpillars grow faster when wasps are low
+            if (state.wasps < 30) {
+                state.caterpillars += 2 + Math.floor((30 - state.wasps) / 10);
+            } else {
+                state.caterpillars += 1;
+            }
+            state.caterpillars = Math.max(0, Math.min(100, state.caterpillars));
+            
+            // --- CATERPILLAR ROOF DAMAGE ---
+            // Roof damage is purely caterpillar-driven
+            let caterpillar_damage = Math.floor(state.caterpillars / 10);
+            state.roof_integrity = Math.max(0, Math.min(100, state.roof_integrity - caterpillar_damage));
+            
+            // --- CAT HARM FROM TOXIC PREY ---
+            // Cats die when consuming contaminated prey
+            if (state.gecko_toxicity > 35) {
+                let cat_toxicity_loss = Math.floor((state.gecko_toxicity - 35) / 15) + 1;
+                state.cats -= cat_toxicity_loss;
+            }
             
             return state;
         }
@@ -3846,15 +3911,12 @@
                     state.awareness_queue.push(2);
                     break;
                 case 'ddt':
-                    // Spray DDT: Mosquitoes -18*compliance, DDT +20, consecutive use tracking
-                    let mosqRed = Math.floor(18 * compliance);
-                    state.mosquitoes = Math.max(0, state.mosquitoes - mosqRed);
-                    state.ddt = Math.min(100, state.ddt + 20);
-                    state.public_trust = Math.min(100, state.public_trust + 2); // +2 from spray
+                    // Spray DDT: Queue for 1 turn delay, no immediate effect
+                    if (!state.ddt_activation_queue) state.ddt_activation_queue = [];
+                    state.ddt_activation_queue.push(20);
                     state.consecutive_ddt_uses++;
                     // Queue ecology harm (handled in simulateDelayedEffects)
-                    let ecology = Math.floor(state.ddt / 12) + 3;
-                    state.ddt_ecology_queue.push(ecology);
+                    state.ddt_ecology_queue.push(Math.floor(20 / 12) + 3);
                     // DDT fatigue: if 3+ consecutive uses, trust penalty
                     if (state.consecutive_ddt_uses >= 3) {
                         state.public_trust = Math.max(0, state.public_trust - 8);
@@ -4512,8 +4574,8 @@
             player.computeDeaths();
             player.updateTrust();
             player.clamp();
-            player.turn++;
             player.recordTurn();
+            player.turn++;
             
             logEvent(player, action, effectsLog);
             
