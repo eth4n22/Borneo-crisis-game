@@ -2557,23 +2557,20 @@
             
             // ==================== CARD SYSTEM ====================
             
-            // Card draw with weighted probabilities
-            // Normal action cards: cats, ddt, awareness, repair, grain, medical_aid (equal weight)
-            // Bonus Funding: noticeably rarer (1 in 28)
+            // Card draw from an infinite weighted deck
             drawCard() {
-                // Weighted deck: 6 normal cards each appear 4 times, bonus_funding appears 1 time
-                // Total: 25 cards in deck
-                const cardDeck = [
-                    'cats', 'cats', 'cats', 'cats',
-                    'ddt', 'ddt', 'ddt', 'ddt',
-                    'awareness', 'awareness', 'awareness', 'awareness',
-                    'repair', 'repair', 'repair', 'repair',
-                    'grain', 'grain', 'grain', 'grain',
-                    'medical_aid', 'medical_aid', 'medical_aid', 'medical_aid',
-                    'bonus_funding'
-                ];
-                const randomIndex = Math.floor(Math.random() * cardDeck.length);
-                const drawnCard = cardDeck[randomIndex];
+                const totalWeight = Object.values(cardDrawWeights).reduce((sum, weight) => sum + weight, 0);
+                let roll = Math.random() * totalWeight;
+                let drawnCard = 'cats';
+
+                for (const [cardType, weight] of Object.entries(cardDrawWeights)) {
+                    roll -= weight;
+                    if (roll < 0) {
+                        drawnCard = cardType;
+                        break;
+                    }
+                }
+
                 this.hand.push(drawnCard);
                 return drawnCard;
             }
@@ -2672,7 +2669,7 @@
                         break;
                         
                     case 'medical_aid':
-                        this.budget -= 8;
+                        this.budget -= 5;
                         this.malaria_infected = Math.max(0, this.malaria_infected - 6);
                         this.rat_disease_infected = Math.max(0, this.rat_disease_infected - 6);
                         effectsLog.push(`Medical Aid: Malaria -6, Plague -6`);
@@ -2888,13 +2885,32 @@
         let compareResource = false;
         let roundEvents = []; // Track global events per round: { round: number, event: string }
         let fundingRound = -1; // Which round gets guaranteed funding (7, 8, or 9)
+        const cardDrawWeights = {
+            cats: 2,
+            ddt: 2,
+            awareness: 2,
+            repair: 2,
+            grain: 2,
+            medical_aid: 2,
+            bonus_funding: 1
+        };
+        const cardActionSymbols = {
+            cats: '🐱',
+            ddt: '💧',
+            awareness: '📢',
+            repair: '🏚️',
+            grain: '🌾',
+            medical_aid: '🏥',
+            bonus_funding: '💰',
+            nothing: '⏸️'
+        };
         
         // Manual advance state
         let pendingAdvance = false;
         let pendingAdvanceType = null; // 'nextPlayer', 'globalEvent', 'endGame'
         let pendingNextPlayerIndex = null;
         let pendingWasLastPlayerInRound = false;
-        
+
         // ==================== GLOBAL EVENT SYSTEM ====================
         // Triggered after all players complete one full rotation
         function triggerGlobalEvent() {
@@ -3018,7 +3034,14 @@
             let banner = document.getElementById('eventBanner');
             banner.className = 'event-banner active ' + type;
             document.getElementById('eventTitle').textContent = title;
-            document.getElementById('eventDesc').innerHTML = desc + '<br><strong>Effects:</strong> ' + effects;
+            let eventDesc = document.getElementById('eventDesc');
+            eventDesc.replaceChildren();
+            eventDesc.appendChild(document.createTextNode(desc));
+            eventDesc.appendChild(document.createElement('br'));
+            let effectsLabel = document.createElement('strong');
+            effectsLabel.textContent = 'Effects:';
+            eventDesc.appendChild(effectsLabel);
+            eventDesc.appendChild(document.createTextNode(' ' + effects));
             
             // Banner stays until next player takes their turn (no auto-hide)
         }
@@ -3029,7 +3052,22 @@
             entry.className = 'log-entry';
             entry.style.borderLeftColor = '#ffd700';
             entry.style.background = 'rgba(255,215,0,0.1)';
-            entry.innerHTML = `<span style="color:#ffd700;font-weight:bold">🌍 GLOBAL: ${title}</span><br><span style="color:#aaa;font-style:italic">${desc}</span><br><span style="color:#ffa502">→ Effects: ${effects}</span>`;
+            let titleSpan = document.createElement('span');
+            titleSpan.style.color = '#ffd700';
+            titleSpan.style.fontWeight = 'bold';
+            titleSpan.textContent = `🌍 GLOBAL: ${title}`;
+            entry.appendChild(titleSpan);
+            entry.appendChild(document.createElement('br'));
+            let descSpan = document.createElement('span');
+            descSpan.style.color = '#aaa';
+            descSpan.style.fontStyle = 'italic';
+            descSpan.textContent = desc;
+            entry.appendChild(descSpan);
+            entry.appendChild(document.createElement('br'));
+            let effectsSpan = document.createElement('span');
+            effectsSpan.style.color = '#ffa502';
+            effectsSpan.textContent = `→ Effects: ${effects}`;
+            entry.appendChild(effectsSpan);
             container.appendChild(entry);
             // Auto-scroll to bottom
             container.scrollTop = container.scrollHeight;
@@ -3113,7 +3151,7 @@
             for (let i = 0; i < numPlayers; i++) {
                 players.push(new Player(names[i], i));
             }
-            
+
             // Deal starting hands (2 cards each)
             players.forEach(p => {
                 p.drawCard();
@@ -3240,7 +3278,10 @@
             // Log the budget growth
             let logEntry = document.createElement('div');
             logEntry.className = 'log-entry';
-            logEntry.innerHTML = `<span style="color:#2ed573">📈 ${player.name} start-of-turn funding: +${totalBudgetGain}</span>`;
+            let fundingSpan = document.createElement('span');
+            fundingSpan.style.color = '#2ed573';
+            fundingSpan.textContent = `📈 ${player.name} start-of-turn funding: +${totalBudgetGain}`;
+            logEntry.appendChild(fundingSpan);
             document.getElementById('logContainer').appendChild(logEntry);
             
             // Scroll log to bottom
@@ -3307,40 +3348,6 @@
             updateGameUI();
         }
         
-        // Player plays a card from hand
-        function playCardFromHand(cardType) {
-            let player = getCurrentPlayer();
-            
-            // Check if player can play this card
-            if (!player.canPlayCard(cardType)) {
-                return;
-            }
-            
-            let effectsLog = [];
-            player.playCard(cardType, effectsLog);
-            
-            // Log the card play
-            let cardName = getCardDisplayName(cardType);
-            let logEntry = document.createElement('div');
-            logEntry.className = 'log-entry';
-            logEntry.innerHTML = `<span style="color:#9b59b6">🎴 Played ${cardName}</span>`;
-            document.getElementById('logContainer').appendChild(logEntry);
-            
-            // Log effects
-            effectsLog.forEach(effect => {
-                let effectEntry = document.createElement('div');
-                effectEntry.className = 'log-entry';
-                effectEntry.innerHTML = `<span style="color:#aaa">   → ${effect}</span>`;
-                document.getElementById('logContainer').appendChild(effectEntry);
-            });
-            
-            // Scroll log to bottom
-            let container = document.getElementById('logContainer');
-            container.scrollTop = container.scrollHeight;
-            
-            updateGameUI();
-        }
-        
         // Handle Confirm Actions or Next Player button
         function handleConfirmOrNext() {
             if (!actionsConfirmed) {
@@ -3356,6 +3363,10 @@
         function confirmActions() {
             let player = getCurrentPlayer();
             let effectsLog = [];
+            let turnNumber = player.turn;
+            let playedCards = player.selectedCards
+                .map(idx => player.hand[idx])
+                .filter(cardType => cardType !== undefined);
             
             // Capture previous values for ecological chain logging (Version 2B)
             let prevValues = {
@@ -3415,10 +3426,31 @@
             // Version 2B: Log ecological chain effects
             player.applyEcologicalEffectsLog(effectsLog, prevValues);
             player.applyDelayedEffects(effectsLog);
+            effectsLog.forEach(effect => {
+                let resolvedText = effect;
+                if (effect.startsWith('Cat drop:')) {
+                    resolvedText = effect.replace('Cat drop:', 'Cat Drop resolved:');
+                } else if (effect.startsWith('Awareness delayed:')) {
+                    resolvedText = effect.replace('Awareness delayed:', 'Awareness resolved:');
+                } else if (effect.startsWith('DDT harm:')) {
+                    resolvedText = effect.replace('DDT harm:', 'DDT ecological effect:');
+                }
+                
+                let effectEntry = document.createElement('div');
+                effectEntry.className = 'log-entry';
+                effectEntry.innerHTML = `<span style="color:#aaa">   → ${resolvedText}</span>`;
+                document.getElementById('logContainer').appendChild(effectEntry);
+            });
             player.computeDeaths();
             player.updateTrust();
             player.clamp();
             player.recordTurn();
+            player.actionHistory.push({
+                turn: turnNumber,
+                action: playedCards[0] || 'nothing',
+                cards: [...playedCards],
+                effects: [...effectsLog]
+            });
             player.turn++;
             
             // Log end of turn
@@ -3595,12 +3627,20 @@
                 },
                 'medical_aid': {
                     name: 'Medical Aid',
-                    cost: '8',
+                    cost: '5',
                     effect: 'Reduces malaria and plague immediately',
                     note: 'Fast relief, but does not fix root causes'
                 }
             };
             return summaries[cardType] || { name: cardType, cost: '?', effect: '', note: '' };
+        }
+
+        function getActionSymbol(actionEntry) {
+            if (!actionEntry) return '';
+            if (actionEntry.cards && actionEntry.cards.length > 0) {
+                return actionEntry.cards.map(card => cardActionSymbols[card] || '').join('');
+            }
+            return cardActionSymbols[actionEntry.action] || '';
         }
         
         // Show tooltip for a card
@@ -3757,8 +3797,12 @@
                 
                 // Card tracking
                 consecutive_ddt_uses: player.consecutive_ddt_uses || 0,
+                pendingInvestmentBonus: player.pendingInvestmentBonus || false,
+                startOfTurnChoiceMade: player.startOfTurnChoiceMade || false,
                 
                 // Delayed effects queues (match actual game queues)
+                deaths_queue: player.deaths_queue ? [...player.deaths_queue] : [],
+                ddt_activation_queue: player.ddt_activation_queue ? [...player.ddt_activation_queue] : [],
                 ddt_ecology_queue: player.ddt_ecology_queue ? [...player.ddt_ecology_queue] : [],
                 cat_drop_queue: player.cat_drop_queue ? [...player.cat_drop_queue] : [],
                 awareness_queue: player.awareness_queue ? [...player.awareness_queue] : [],
@@ -3801,21 +3845,6 @@
             let grain_loss = 2 + Math.floor(state.rats / 18);
             state.grain_stores = Math.max(0, Math.min(100, state.grain_stores - grain_loss));
             
-            // Trust decay
-            state.public_trust = Math.max(0, state.public_trust - 1);
-            
-            return state;
-        }
-        
-        // Simulate ecological effects - matches real game applyEcologicalEffects
-        function simulateEcologicalEffects(state) {
-            // --- WASP DYNAMICS ---
-            // DDT reduces wasps, wasps recover slowly
-            state.wasps -= Math.floor(state.ddt / 10);
-            state.wasps += 1;
-            state.wasps = Math.max(0, Math.min(100, state.wasps));
-            
-            // --- CATERPILLAR DYNAMICS ---
             // Caterpillars grow faster when wasps are low
             if (state.wasps < 30) {
                 state.caterpillars += 2 + Math.floor((30 - state.wasps) / 10);
@@ -3824,53 +3853,10 @@
             }
             state.caterpillars = Math.max(0, Math.min(100, state.caterpillars));
             
-            // --- CATERPILLAR ROOF DAMAGE ---
             // Roof damage is purely caterpillar-driven
             let caterpillar_damage = Math.floor(state.caterpillars / 10);
             state.roof_integrity = Math.max(0, Math.min(100, state.roof_integrity - caterpillar_damage));
             
-            // --- CAT HARM FROM TOXIC PREY ---
-            // Cats die when consuming contaminated prey
-            if (state.gecko_toxicity > 35) {
-                let cat_toxicity_loss = Math.floor((state.gecko_toxicity - 35) / 15) + 1;
-                state.cats -= cat_toxicity_loss;
-            }
-            
-            return state;
-        }
-        
-        // Simulate ecological effects - matches real game applyEcologicalEffects
-        function simulateEcologicalEffects(state) {
-            // --- WASP DYNAMICS ---
-            // DDT reduces wasps, wasps recover slowly
-            state.wasps -= Math.floor(state.ddt / 10);
-            state.wasps += 1;  // natural growth
-            state.wasps = Math.max(0, Math.min(100, state.wasps));
-            
-            // --- CATERPILLAR DYNAMICS ---
-            // Caterpillars grow faster when wasps are low
-            if (state.wasps < 30) {
-                state.caterpillars += 2 + Math.floor((30 - state.wasps) / 10);
-            } else {
-                state.caterpillars += 1;  // base growth
-            }
-            state.caterpillars = Math.max(0, Math.min(100, state.caterpillars));
-            
-            // --- CATERPILLAR ROOF DAMAGE ---
-            // Roof damage is purely caterpillar-driven
-            let caterpillar_damage = Math.floor(state.caterpillars / 10);
-            state.roof_integrity = Math.max(0, Math.min(100, state.roof_integrity - caterpillar_damage));
-            
-            // --- GECKO TOXICITY BUILDUP ---
-            // DDT bioaccumulates in the food chain
-            if (state.ddt > 5) {
-                state.gecko_toxicity += Math.floor(state.ddt / 20) + 1;
-            } else {
-                state.gecko_toxicity -= 1;
-            }
-            state.gecko_toxicity = Math.max(0, Math.min(100, state.gecko_toxicity));
-            
-            // --- CAT HARM FROM TOXIC PREY ---
             // Cats die when consuming contaminated prey
             if (state.gecko_toxicity > 35) {
                 let cat_toxicity_loss = Math.floor((state.gecko_toxicity - 35) / 15) + 1;
@@ -3883,54 +3869,47 @@
         // Simulate card effects - matches actual game playCard() logic exactly
         // Note: This applies IMMEDIATE effects only. Delayed effects are handled in simulateDelayedEffects.
         function simulateCardEffects(state, cardType) {
-            const compliance = state.public_trust < 25 ? 0.7 : 1.0;
-            
             switch(cardType) {
                 case 'repair':
-                    // Repair Thatch: Roof +10 (capped at max_roof_integrity)
+                    state.budget -= 8;
                     state.roof_integrity = Math.min(state.max_roof_integrity, state.roof_integrity + 10);
                     state.consecutive_ddt_uses = 0;
                     break;
                 case 'grain':
-                    // Protect Grain: Grain +10 (capped at max_grain_stores)
+                    state.budget -= 6;
                     state.grain_stores = Math.min(state.max_grain_stores, state.grain_stores + 10);
                     state.consecutive_ddt_uses = 0;
                     break;
                 case 'medical_aid':
-                    // Medical Aid: Malaria -6, Plague -6
+                    state.budget -= 5;
                     state.malaria_infected = Math.max(0, state.malaria_infected - 6);
                     state.rat_disease_infected = Math.max(0, state.rat_disease_infected - 6);
                     break;
                 case 'awareness':
-                    // Awareness: Trust +1, Malaria -3, Rat Disease -3, +2 delayed
+                    state.budget -= 10;
                     state.public_trust = Math.min(100, state.public_trust + 1);
                     state.malaria_infected = Math.max(0, state.malaria_infected - 3);
                     state.rat_disease_infected = Math.max(0, state.rat_disease_infected - 3);
                     state.consecutive_ddt_uses = 0;
-                    // Queue delayed effect (handled in simulateDelayedEffects)
                     state.awareness_queue.push(2);
                     break;
                 case 'ddt':
-                    // Spray DDT: Queue for 1 turn delay, no immediate effect
+                    state.budget -= 12;
                     if (!state.ddt_activation_queue) state.ddt_activation_queue = [];
                     state.ddt_activation_queue.push(20);
                     state.consecutive_ddt_uses++;
-                    // Queue ecology harm (handled in simulateDelayedEffects)
                     state.ddt_ecology_queue.push(Math.floor(20 / 12) + 3);
-                    // DDT fatigue: if 3+ consecutive uses, trust penalty
                     if (state.consecutive_ddt_uses >= 3) {
                         state.public_trust = Math.max(0, state.public_trust - 8);
                     }
                     break;
                 case 'cats':
-                    // Cat Drop: Cats +9 if >85, else +18 (queue for delayed effect), Trust +1 immediate
+                    state.budget -= 15;
                     let increase = state.cats > 85 ? 9 : 18;
                     state.cat_drop_queue.push(increase);
-                    state.public_trust = Math.min(100, state.public_trust + 1); // Trust +1 immediate
                     state.consecutive_ddt_uses = 0;
                     break;
                 case 'bonus_funding':
-                    // Bonus Funding: Budget +15
                     state.budget += 15;
                     break;
             }
@@ -3997,12 +3976,10 @@
         
         // Simulate trust updates - matches actual game updateTrust() logic
         function simulateTrust(state) {
-            // Base trust decay of -1 each turn (already applied in simulateNaturalDynamics)
-            // Death penalty: if deaths >= 5, apply additional trust penalty
+            state.public_trust -= 1;
             if (state.deaths_this_turn >= 5) {
                 state.public_trust -= Math.floor(state.deaths_this_turn / 3);
             }
-            // Clamp after trust adjustments
             state.public_trust = Math.max(0, Math.min(100, state.public_trust));
             return state;
         }
@@ -4095,9 +4072,6 @@
                 
                 // Apply natural dynamics
                 simState = simulateNaturalDynamics(simState);
-                
-                // Apply ecological effects
-                simState = simulateEcologicalEffects(simState);
                 
                 // Apply delayed effects
                 simState = simulateDelayedEffects(simState);
@@ -4729,25 +4703,42 @@
             
             let logEntry = document.createElement('div');
             logEntry.className = 'log-entry';
-            
-            // Header with player, turn, action
-            let html = `<span class="turn">${player.name} • Turn ${player.turn}:</span> <span class="action">${actionLabels[actionName]}</span>`;
-            html += `<br><span style="color:#aaa;font-style:italic">"${narrative}"</span>`;
-            
-            // Budget change
+
+            let turnSpan = document.createElement('span');
+            turnSpan.className = 'turn';
+            turnSpan.textContent = `${player.name} • Turn ${player.turn}:`;
+            logEntry.appendChild(turnSpan);
+
+            logEntry.appendChild(document.createTextNode(' '));
+
+            let actionSpan = document.createElement('span');
+            actionSpan.className = 'action';
+            actionSpan.textContent = actionLabels[actionName];
+            logEntry.appendChild(actionSpan);
+
+            logEntry.appendChild(document.createElement('br'));
+
+            let narrativeSpan = document.createElement('span');
+            narrativeSpan.style.color = '#aaa';
+            narrativeSpan.style.fontStyle = 'italic';
+            narrativeSpan.textContent = `"${narrative}"`;
+            logEntry.appendChild(narrativeSpan);
+
+            logEntry.appendChild(document.createElement('br'));
+
             let budgetColor = budgetChange < 0 ? '#ff6b81' : (budgetChange > 0 ? '#2ed573' : '#aaa');
-            html += `<br><span style="color:${budgetColor}">💰 Budget: ${budgetChange >= 0 ? '+' : ''}${budgetChange}</span>`;
-            
-            // Key stats after action
-            html += `<br><span style="color:#ff9f43">📊 Stats:</span> `;
-            html += `🦟${player.mosquitoes} `;
-            html += `🐱${player.cats} `;
-            html += `🐀${player.rats} `;
-            html += `🤒 Malaria:${player.malaria_infected} `;
-            html += `🐀Disease:${player.rat_disease_infected} `;
-            html += `❤️ Trust:${player.public_trust} `;
-            html += `🏚️Roof:${player.roof_integrity}/${player.max_roof_integrity} `;
-            html += `🌾Grain:${player.grain_stores}/${player.max_grain_stores}`;
+            let budgetSpan = document.createElement('span');
+            budgetSpan.style.color = budgetColor;
+            budgetSpan.textContent = `💰 Budget: ${budgetChange >= 0 ? '+' : ''}${budgetChange}`;
+            logEntry.appendChild(budgetSpan);
+
+            logEntry.appendChild(document.createElement('br'));
+
+            let statsLabel = document.createElement('span');
+            statsLabel.style.color = '#ff9f43';
+            statsLabel.textContent = '📊 Stats:';
+            logEntry.appendChild(statsLabel);
+            logEntry.appendChild(document.createTextNode(` 🦟${player.mosquitoes} 🐱${player.cats} 🐀${player.rats} 🤒 Malaria:${player.malaria_infected} 🐀Disease:${player.rat_disease_infected} ❤️ Trust:${player.public_trust} 🏚️Roof:${player.roof_integrity}/${player.max_roof_integrity} 🌾Grain:${player.grain_stores}/${player.max_grain_stores}`));
             
             // Add delayed effect narratives
             let delayedNarrative = '';
@@ -4760,12 +4751,19 @@
             }
             
             if (delayedNarrative) {
-                html += `<br><span style="color:#ffd700">${delayedNarrative}</span>`;
+                logEntry.appendChild(document.createElement('br'));
+                let delayedSpan = document.createElement('span');
+                delayedSpan.style.color = '#ffd700';
+                delayedSpan.textContent = delayedNarrative;
+                logEntry.appendChild(delayedSpan);
             }
             
             // Deaths
-            html += `<br><span class="deaths">☠️ Deaths this turn: ${player.deaths_this_turn}</span>`;
-            logEntry.innerHTML = html;
+            logEntry.appendChild(document.createElement('br'));
+            let deathsSpan = document.createElement('span');
+            deathsSpan.className = 'deaths';
+            deathsSpan.textContent = `☠️ Deaths this turn: ${player.deaths_this_turn}`;
+            logEntry.appendChild(deathsSpan);
             
             let container = document.getElementById('logContainer');
             container.appendChild(logEntry);
@@ -4789,7 +4787,7 @@
                 card.className = `player-card${isActive ? ' active' : ''}`;
                 card.innerHTML = `
                     <h3>
-                        <span>${p.name || 'Player ' + (idx + 1)}</span>
+                        <span class="player-name-text"></span>
                         ${isActive ? '<span class="active-badge">ACTIVE</span>' : ''}
                     </h3>
                     <div class="stat-row">
@@ -4847,6 +4845,7 @@
                         </div>
                     </div>
                 `;
+                card.querySelector('.player-name-text').textContent = p.name || ('Player ' + (idx + 1));
                 sidebar.appendChild(card);
             });
         }
@@ -4859,12 +4858,17 @@
             renderPlayersSidebar();
             
             // Player indicator
-            document.getElementById('playerIndicator').innerHTML = players.map((pl, idx) => {
+            let playerIndicator = document.getElementById('playerIndicator');
+            playerIndicator.innerHTML = '';
+            players.forEach((pl, idx) => {
                 let cls = 'waiting';
                 if (idx === currentPlayerIndex) cls = 'current';
                 else if (pl.isFinished()) cls = 'finished';
-                return `<span class="player-badge ${cls}">${pl.name}${pl.isFinished() ? ' ✓' : ''}</span>`;
-            }).join('');
+                let badge = document.createElement('span');
+                badge.className = `player-badge ${cls}`;
+                badge.textContent = `${pl.name}${pl.isFinished() ? ' ✓' : ''}`;
+                playerIndicator.appendChild(badge);
+            });
             
             document.getElementById('scoreSoFar').textContent = `Score: ${player.calculateScore().score}/100`;
             
@@ -5031,23 +5035,37 @@
             tbody.innerHTML = '';
             results.forEach((r, idx) => {
                 let sd = r.scoreData;
-                tbody.innerHTML += `<tr>
-                    <td class="rank-col">${idx + 1}</td>
-                    <td>${r.player.name}</td>
-                    <td class="score-col">${sd.score}</td>
-                    <td>${sd.total_deaths}</td>
-                    <td>${sd.peak_infection}</td>
-                    <td>${sd.outbreak_duration}</td>
-                    <td>${sd.eco_events}</td>
-                    <td>${sd.final_trust}</td>
-                    <td>${sd.final_budget}</td>
-                    <td>${sd.final_roof}</td>
-                    <td>${sd.final_grain}</td>
-                </tr>`;
+                let row = document.createElement('tr');
+                [
+                    { text: idx + 1, className: 'rank-col' },
+                    { text: r.player.name },
+                    { text: sd.score, className: 'score-col' },
+                    { text: sd.total_deaths },
+                    { text: sd.peak_infection },
+                    { text: sd.outbreak_duration },
+                    { text: sd.eco_events },
+                    { text: sd.final_trust },
+                    { text: sd.final_budget },
+                    { text: sd.final_roof },
+                    { text: sd.final_grain }
+                ].forEach(cellData => {
+                    let cell = document.createElement('td');
+                    if (cellData.className) cell.className = cellData.className;
+                    cell.textContent = cellData.text;
+                    row.appendChild(cell);
+                });
+                tbody.appendChild(row);
             });
             
             ['diseasePlayerSelect', 'populationPlayerSelect', 'ecologyPlayerSelect', 'deathsPlayerSelect', 'villagePlayerSelect', 'resourcePlayerSelect'].forEach(selId => {
-                document.getElementById(selId).innerHTML = players.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+                let select = document.getElementById(selId);
+                select.innerHTML = '';
+                players.forEach((p, i) => {
+                    let option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = p.name;
+                    select.appendChild(option);
+                });
             });
             
             setTimeout(() => createCharts(), 100);
@@ -5083,13 +5101,11 @@
             
             // Create labels with action indicators and event tags
             let labels = [];
-            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', awareness: '📢' };
             for (let i = 0; i < log.turn.length; i++) {
                 let turnNum = log.turn[i];
                 // Find the action for this specific turn
                 let actionEntry = player.actionHistory.find(a => a.turn === turnNum);
-                let action = actionEntry ? actionEntry.action : '';
-                let symbol = actionSymbols[action] || '';
+                let symbol = getActionSymbol(actionEntry);
                 
                 // Find event for this turn's round
                 let playerRound = Math.ceil(turnNum / numPlayers);
@@ -5234,13 +5250,11 @@
             let idx = parseInt(document.getElementById('diseasePlayerSelect').value);
             let p = players[idx];
             let log = p.dataLog;
-            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', awareness: '📢' };
             let labels = [];
             for (let i = 0; i < log.turn.length; i++) {
                 let turnNum = log.turn[i];
                 let actionEntry = p.actionHistory.find(a => a.turn === turnNum);
-                let action = actionEntry ? actionEntry.action : '';
-                let symbol = actionSymbols[action] || '';
+                let symbol = getActionSymbol(actionEntry);
                 let playerRound = Math.ceil(turnNum / numPlayers);
                 let eventTag = '';
                 let roundEvt = roundEvents.find(e => e.round === playerRound);
@@ -5267,13 +5281,11 @@
             let idx = parseInt(document.getElementById('populationPlayerSelect').value);
             let p = players[idx];
             let log = p.dataLog;
-            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
             let labels = [];
             for (let i = 0; i < log.turn.length; i++) {
                 let turnNum = log.turn[i];
                 let actionEntry = p.actionHistory.find(a => a.turn === turnNum);
-                let action = actionEntry ? actionEntry.action : '';
-                let symbol = actionSymbols[action] || '';
+                let symbol = getActionSymbol(actionEntry);
                 let playerRound = Math.ceil(turnNum / numPlayers);
                 let eventTag = '';
                 let roundEvt = roundEvents.find(e => e.round === playerRound);
@@ -5302,13 +5314,11 @@
             let idx = parseInt(document.getElementById('deathsPlayerSelect').value);
             let p = players[idx];
             let log = p.dataLog;
-            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
             let labels = [];
             for (let i = 0; i < log.turn.length; i++) {
                 let turnNum = log.turn[i];
                 let actionEntry = p.actionHistory.find(a => a.turn === turnNum);
-                let action = actionEntry ? actionEntry.action : '';
-                let symbol = actionSymbols[action] || '';
+                let symbol = getActionSymbol(actionEntry);
                 let playerRound = Math.ceil(turnNum / numPlayers);
                 let eventTag = '';
                 let roundEvt = roundEvents.find(e => e.round === playerRound);
@@ -5373,15 +5383,13 @@
         
         // Compare All functions for each chart
         function updateDiseaseChartCompareAll() {
-            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
             // Use first player's labels as reference
             let refLog = players[0].dataLog;
             let labels = [];
             for (let i = 0; i < refLog.turn.length; i++) {
                 let turnNum = refLog.turn[i];
                 let actionEntry = players[0].actionHistory.find(a => a.turn === turnNum);
-                let action = actionEntry ? actionEntry.action : '';
-                let symbol = actionSymbols[action] || '';
+                let symbol = getActionSymbol(actionEntry);
                 let playerRound = Math.ceil(turnNum / numPlayers);
                 let roundEvt = roundEvents.find(e => e.round === playerRound);
                 let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
@@ -5419,14 +5427,12 @@
         }
         
         function updatePopulationChartCompareAll() {
-            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
             let refLog = players[0].dataLog;
             let labels = [];
             for (let i = 0; i < refLog.turn.length; i++) {
                 let turnNum = refLog.turn[i];
                 let actionEntry = players[0].actionHistory.find(a => a.turn === turnNum);
-                let action = actionEntry ? actionEntry.action : '';
-                let symbol = actionSymbols[action] || '';
+                let symbol = getActionSymbol(actionEntry);
                 let playerRound = Math.ceil(turnNum / numPlayers);
                 let roundEvt = roundEvents.find(e => e.round === playerRound);
                 let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
@@ -5486,14 +5492,12 @@
         }
         
         function updateEcologyChartCompareAll() {
-            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
             let refLog = players[0].dataLog;
             let labels = [];
             for (let i = 0; i < refLog.turn.length; i++) {
                 let turnNum = refLog.turn[i];
                 let actionEntry = players[0].actionHistory.find(a => a.turn === turnNum);
-                let action = actionEntry ? actionEntry.action : '';
-                let symbol = actionSymbols[action] || '';
+                let symbol = getActionSymbol(actionEntry);
                 let playerRound = Math.ceil(turnNum / numPlayers);
                 let roundEvt = roundEvents.find(e => e.round === playerRound);
                 let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
@@ -5529,14 +5533,12 @@
         }
         
         function updateDeathsChartCompareAll() {
-            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', ratControl: '🐀' };
             let refLog = players[0].dataLog;
             let labels = [];
             for (let i = 0; i < refLog.turn.length; i++) {
                 let turnNum = refLog.turn[i];
                 let actionEntry = players[0].actionHistory.find(a => a.turn === turnNum);
-                let action = actionEntry ? actionEntry.action : '';
-                let symbol = actionSymbols[action] || '';
+                let symbol = getActionSymbol(actionEntry);
                 let playerRound = Math.ceil(turnNum / numPlayers);
                 let roundEvt = roundEvents.find(e => e.round === playerRound);
                 let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
@@ -5582,12 +5584,10 @@
             let p = players[idx];
             let log = p.dataLog;
             let labels = [];
-            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', awareness: '📢', repair: '🏚️', grain: '🌾' };
             for (let i = 0; i < log.turn.length; i++) {
                 let turnNum = log.turn[i];
                 let actionEntry = p.actionHistory.find(a => a.turn === turnNum);
-                let action = actionEntry ? actionEntry.action : '';
-                let symbol = actionSymbols[action] || '';
+                let symbol = getActionSymbol(actionEntry);
                 let playerRound = Math.ceil(turnNum / numPlayers);
                 let roundEvt = roundEvents.find(e => e.round === playerRound);
                 let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
@@ -5646,12 +5646,10 @@
             let p = players[idx];
             let log = p.dataLog;
             let labels = [];
-            let actionSymbols = { ddt: '💧', nothing: '⏸️', cats: '🐱', awareness: '📢', repair: '🏚️', grain: '🌾' };
             for (let i = 0; i < log.turn.length; i++) {
                 let turnNum = log.turn[i];
                 let actionEntry = p.actionHistory.find(a => a.turn === turnNum);
-                let action = actionEntry ? actionEntry.action : '';
-                let symbol = actionSymbols[action] || '';
+                let symbol = getActionSymbol(actionEntry);
                 let playerRound = Math.ceil(turnNum / numPlayers);
                 let roundEvt = roundEvents.find(e => e.round === playerRound);
                 let eventTag = roundEvt ? ' [' + roundEvt.event + ']' : '';
