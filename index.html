@@ -550,6 +550,7 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
+        min-height: 0;
     }
 
     /* RIGHT — Intel Panel */
@@ -814,7 +815,7 @@
     /* =============================================================
        POLICY STATION
     ============================================================= */
-    .policy-station { position: relative; overflow: hidden; }
+    .policy-station { position: relative; overflow: hidden; flex-shrink: 0; }
 
     .ps-header {
         display: flex;
@@ -1113,7 +1114,7 @@
        DISPATCH LOG
     ============================================================= */
     #logContainer {
-        max-height: 320px;
+        max-height: 220px;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
