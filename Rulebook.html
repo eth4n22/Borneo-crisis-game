@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fixes That Fail: The Borneo Simulation — Rulebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Special+Elite&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────── */
+:root {
+  --paper:      #f0e4c2;
+  --paper-dark: #e0d0a0;
+  --ink:        #1a1208;
+  --ink-faded:  #4a3c28;
+  --green:      #2a4a35;
+  --green-light:#3d6b4e;
+  --ochre:      #b8860b;
+  --rust:       #8b3a1e;
+  --border:     #8a7a5a;
+  --stamp-red:  #7a2215;
+  --warn-bg:    #fdf3dc;
+  --tip-bg:     #edf5ee;
+  --font-head:  'Playfair Display', Georgia, serif;
+  --font-body:  'Special Elite', 'Courier New', monospace;
+  --font-serif: 'Libre Baskerville', Georgia, serif;
+}
+
+/* ─── RESET & BASE ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #c8b890;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(0,0,0,.03) 40px, rgba(0,0,0,.03) 41px),
+    repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,0,0,.02) 40px, rgba(0,0,0,.02) 41px);
+  font-family: var(--font-body);
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+}
+
+/* ─── PAPER ───────────────────────────────────────────────── */
+.document {
+  max-width: 780px;
+  margin: 0 auto;
+  background: var(--paper);
+  box-shadow: 0 4px 40px rgba(0,0,0,.45), 0 1px 0 rgba(255,255,255,.3) inset;
+  position: relative;
+  /* paper grain */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #f4e8c8 0%, #ede0b8 100%);
+}
+
+/* stain marks */
+.document::before {
+  content:'';
+  position:absolute; top:0; right:0; bottom:0; left:0;
+  background: 
+    radial-gradient(ellipse 180px 80px at 92% 12%, rgba(150,100,30,.07) 0%, transparent 70%),
+    radial-gradient(ellipse 120px 60px at 8% 85%, rgba(100,60,20,.06) 0%, transparent 70%);
+  pointer-events:none; z-index:0;
+}
+
+/* ─── COVER ───────────────────────────────────────────────── */
+.cover {
+  background: var(--green);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E"),
+    linear-gradient(160deg, #1e3a2a 0%, #2a4a35 50%, #1a3020 100%);
+  color: var(--paper);
+  padding: 60px 64px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::after {
+  content:'';
+  position:absolute; inset:0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent, transparent 18px,
+    rgba(255,255,255,.018) 18px, rgba(255,255,255,.018) 19px
+  );
+  pointer-events:none;
+}
+
+.cover-emblem {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 36px;
+}
+.emblem-circle {
+  width: 80px; height: 80px;
+  border: 3px solid var(--ochre);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.emblem-circle::before {
+  content: '';
+  position: absolute; inset: 5px;
+  border: 1px solid rgba(184,134,11,.4);
+  border-radius: 50%;
+}
+.emblem-inner {
+  font-size: 32px;
+  line-height: 1;
+}
+.emblem-text {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  line-height: 1.7;
+  opacity: .85;
+  color: var(--paper-dark);
+}
+.emblem-text strong {
+  display: block;
+  color: var(--ochre);
+  font-size: 11px;
+  letter-spacing: .22em;
+}
+
+.cover-rule {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ochre) 20%, var(--ochre) 80%, transparent);
+  margin: 0 0 28px;
+}
+
+.cover h1 {
+  font-family: var(--font-head);
+  font-size: 46px;
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -.01em;
+  color: #fff;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+.cover h1 span { color: var(--ochre); }
+
+.cover-subtitle {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--paper-dark);
+  opacity: .8;
+  margin-bottom: 28px;
+}
+
+.cover-meta {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+.meta-item {
+  display: flex; flex-direction: column;
+  gap: 2px;
+}
+.meta-label {
+  font-size: 9.5px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ochre);
+  opacity: .8;
+}
+.meta-value {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--paper);
+}
+
+.flavour-box {
+  background: rgba(0,0,0,.25);
+  border-left: 3px solid var(--ochre);
+  padding: 16px 20px;
+  margin-top: 4px;
+  border-radius: 0 3px 3px 0;
+}
+.flavour-box p {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: rgba(240,228,194,.9);
+}
+
+/* ─── BODY CONTENT ────────────────────────────────────────── */
+.content {
+  padding: 52px 64px 60px;
+  position: relative; z-index: 1;
+}
+
+/* ─── SECTION HEADERS ─────────────────────────────────────── */
+.section {
+  margin-bottom: 44px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--green);
+}
+.section-num {
+  background: var(--green);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.section-title {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: .01em;
+}
+
+/* ─── BODY TEXT ───────────────────────────────────────────── */
+p {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: var(--ink-faded);
+  margin-bottom: 12px;
+}
+p:last-child { margin-bottom: 0; }
+
+ul, ol {
+  padding-left: 20px;
+  margin-bottom: 14px;
+}
+li {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--ink-faded);
+  margin-bottom: 3px;
+}
+li strong {
+  color: var(--ink);
+}
+
+/* ─── TABLES ──────────────────────────────────────────────── */
+.table-wrap {
+  overflow-x: auto;
+  margin: 14px 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+}
+thead tr {
+  background: var(--green);
+  color: var(--paper);
+}
+thead th {
+  padding: 9px 14px;
+  text-align: left;
+  font-weight: normal;
+  letter-spacing: .08em;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+tbody tr {
+  border-bottom: 1px solid var(--paper-dark);
+  transition: background .15s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:nth-child(even) { background: rgba(0,0,0,.03); }
+tbody tr:hover { background: rgba(42,74,53,.06); }
+td {
+  padding: 9px 14px;
+  vertical-align: top;
+  color: var(--ink-faded);
+  line-height: 1.6;
+}
+td:first-child { color: var(--ink); font-size: 13px; }
+.cost-tag {
+  display: inline-block;
+  background: var(--green);
+  color: var(--paper);
+  padding: 1px 7px;
+  border-radius: 2px;
+  font-size: 11px;
+  letter-spacing: .05em;
+}
+.tag-upstream { background: var(--rust); }
+.tag-downstream { background: var(--ochre); color: var(--ink); }
+.tag-neutral { background: var(--ink-faded); }
+
+/* ─── CALLOUT BOXES ───────────────────────────────────────── */
+.callout {
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-radius: 2px;
+  border-left: 4px solid;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.75;
+}
+.callout-title {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: .03em;
+}
+.callout-warn {
+  background: var(--warn-bg);
+  border-color: var(--rust);
+  color: #5a2a10;
+}
+.callout-warn .callout-title { color: var(--rust); }
+.callout-tip {
+  background: var(--tip-bg);
+  border-color: var(--green-light);
+  color: #1a3a25;
+}
+.callout-tip .callout-title { color: var(--green); }
+.callout-rule {
+  background: #f5ecd8;
+  border-color: var(--ochre);
+  color: var(--ink-faded);
+}
+.callout-rule .callout-title { color: var(--ochre); }
+
+/* ─── TURN STEPS ──────────────────────────────────────────── */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0;
+}
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.step-num {
+  background: var(--green);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 11px;
+  min-width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-body {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-faded);
+}
+.step-body strong { color: var(--ink); }
+
+/* ─── VARIABLE GRID ───────────────────────────────────────── */
+.var-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.var-card {
+  background: rgba(42,74,53,.06);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.var-icon { font-size: 22px; line-height: 1; }
+.var-info {}
+.var-name {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ink);
+  display: block;
+}
+.var-val {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--green);
+}
+.var-hidden {
+  background: rgba(139,58,30,.06);
+  border-color: rgba(139,58,30,.3);
+}
+.var-hidden .var-val { color: var(--rust); font-size: 13px; font-weight: 400; font-family: var(--font-body); font-style: italic; }
+
+/* ─── CHAIN DIAGRAM ───────────────────────────────────────── */
+.chain {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 10px 0;
+}
+.chain-node {
+  background: var(--green);
+  color: var(--paper);
+  padding: 5px 12px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.chain-node.bad { background: var(--rust); }
+.chain-node.warn { background: var(--ochre); color: var(--ink); }
+.chain-arrow {
+  font-size: 14px;
+  color: var(--border);
+  padding: 0 4px;
+}
+
+/* ─── SCORE TABLE ─────────────────────────────────────────── */
+.score-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 14px 0;
+}
+.score-col h4 {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.score-col.penalties h4 { color: var(--rust); border-color: var(--rust); }
+.score-col.bonuses h4 { color: var(--green); border-color: var(--green); }
+
+/* ─── LOOP DIAGRAM ────────────────────────────────────────── */
+.loop-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 14px 0;
+}
+.loop-box {
+  flex: 1; min-width: 260px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 14px;
+}
+.loop-box h4 {
+  font-family: var(--font-head);
+  font-size: 13.5px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.loop-reinforce h4 { color: var(--rust); }
+.loop-balance h4 { color: var(--green); }
+.loop-label {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 2px;
+  margin-bottom: 8px;
+}
+.loop-reinforce .loop-label { background: var(--rust); color: var(--paper); }
+.loop-balance .loop-label { background: var(--green); color: var(--paper); }
+
+/* ─── PAGE DIVIDER ────────────────────────────────────────── */
+.page-break {
+  border: none;
+  border-top: 2px dashed var(--paper-dark);
+  margin: 44px 0;
+  position: relative;
+}
+.page-break::after {
+  content: '— continued —';
+  position: absolute;
+  top: -9px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--paper);
+  padding: 0 10px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--border);
+  letter-spacing: .12em;
+}
+
+/* ─── FOOTER ──────────────────────────────────────────────── */
+footer {
+  background: var(--green);
+  color: var(--paper);
+  padding: 14px 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  position: relative; z-index: 1;
+}
+footer .footer-left { opacity: .7; }
+footer .footer-center { opacity: .9; text-align: center; }
+footer .footer-right { opacity: .7; }
+
+/* ─── STAMP ───────────────────────────────────────────────── */
+.stamp {
+  display: inline-block;
+  border: 2.5px solid var(--stamp-red);
+  color: var(--stamp-red);
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 2px;
+  transform: rotate(-3deg);
+  opacity: .7;
+  float: right;
+  margin: 0 0 8px 16px;
+}
+
+/* ─── DAMAGE FORMULA ──────────────────────────────────────── */
+.formula {
+  background: #1a1208;
+  color: #f0e4c2;
+  font-family: 'Courier New', monospace;
+  font-size: 12.5px;
+  padding: 10px 16px;
+  border-radius: 3px;
+  margin: 8px 0;
+  letter-spacing: .04em;
+}
+
+/* ─── EVENT TABLE ─────────────────────────────────────────── */
+.event-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+.event-card {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+}
+.event-name {
+  font-weight: bold;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 2px;
+}
+.event-effect { color: var(--ink-faded); font-size: 12px; }
+
+/* ─── TWEAKS ──────────────────────────────────────────────── */
+#tweaks-panel {
+  display: none;
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 18px 20px;
+  width: 240px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.15);
+  z-index: 1000;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+}
+#tweaks-panel h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: #222;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.tweak-row { margin-bottom: 12px; }
+.tweak-row label { display: block; color: #666; font-size: 11px; margin-bottom: 4px; letter-spacing: .05em; text-transform: uppercase; }
+.tweak-row select, .tweak-row input[type=range] { width: 100%; }
+.tweak-row select { padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
+.tweak-row input[type=color] { width: 100%; height: 28px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+
+/* ─── PRINT ───────────────────────────────────────────────── */
+@media print {
+  body { background: white; padding: 0; }
+  .document { max-width: 100%; box-shadow: none; }
+  .page-break { page-break-after: always; border: none; }
+  #tweaks-panel { display: none !important; }
+  .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  thead tr { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@media (max-width: 600px) {
+  .content { padding: 32px 24px 40px; }
+  .cover { padding: 40px 28px 36px; }
+  .cover h1 { font-size: 32px; }
+  footer { padding: 12px 24px; flex-direction: column; gap: 4px; text-align: center; }
+  .score-grid, .event-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="document">
+
+  <!-- ═══════════════════ COVER ═══════════════════ -->
+  <div class="cover">
+    <div class="cover-emblem">
+      <div class="emblem-circle">
+        <div class="emblem-inner">🌿</div>
+      </div>
+      <div class="emblem-text">
+        <strong>WHO Field Operations Division</strong>
+        South-East Asia Regional Office · Classified Simulation Materials<br>
+        Document Series: UTC2703 · NUS Systems Thinking Module<br>
+        Done by: Ethan, Clement, Isabelle
+      </div>
+    </div>
+    <div class="cover-rule"></div>
+    <div class="stamp">FIELD COPY</div>
+    <h1>Fixes That Fail:<br><span>The Borneo Simulation</span></h1>
+    <p class="cover-subtitle">A systems thinking policy simulation set in 1950s Borneo</p>
+    <div class="cover-meta">
+      <div class="meta-item"><span class="meta-label">Players</span><span class="meta-value">2 – 4</span></div>
+      <div class="meta-item"><span class="meta-label">Turns</span><span class="meta-value">12 per player (24 months)</span></div>
+      <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">~ 20–30 minutes</span></div>
+      <div class="meta-item"><span class="meta-label">Complexity</span><span class="meta-value">Intermediate</span></div>
+    </div>
+    <div class="flavour-box">
+      <p>"In 1950s Borneo, the WHO sprayed DDT to eliminate malaria. The mosquitoes died. So did the wasps. The caterpillars multiplied. The roofs collapsed. The cats perished. The rats took over. You are a public health operative. Do better — or repeat history."</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ BODY ═══════════════════ -->
+  <div class="content">
+
+    <!-- ─── SECTION 1 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">Section 01</span>
+        <span class="section-title">Objective</span>
+      </div>
+      <p>Each player independently manages their own village over <strong>12 turns</strong>, representing 24 months of public health operations in colonial-era Borneo. The simulation runs simultaneously — decisions are made in parallel, with global events affecting all players each round.</p>
+      <p>Your objective is threefold:</p>
+      <ul>
+        <li>Keep your village <strong>healthy</strong> — minimise deaths from disease, starvation, and exposure</li>
+        <li>Maintain <strong>ecological balance</strong> — resist the temptation of quick fixes with delayed consequences</li>
+        <li>Preserve <strong>public trust</strong> — your policies only work if the community supports them</li>
+      </ul>
+      <p>Players are ranked at game end by a final score from <strong>0 to 100</strong>. The highest score wins.</p>
+      <div class="callout callout-rule">
+        <div class="callout-title">⚖️ Core Design Note</div>
+        This game models the <em>Fixes That Fail</em> systems archetype — where short-term interventions produce unintended long-term consequences. Your goal is not simply to act, but to act wisely.
+      </div>
+    </div>
+
+    <!-- ─── SECTION 2 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">Section 02</span>
+        <span class="section-title">The Game Board — Variables</span>
+      </div>
+      <p>Your village is represented by a <strong>Field Status Panel</strong> — a set of tracked variables. Visible variables are known to all players; hidden variables evolve silently and reveal their effects through cascading consequences.</p>
+
+      <p><strong>Visible Variables</strong> — displayed on your Field Status Panel at all times:</p>
+      <div class="var-grid">
+        <div class="var-card"><span class="var-icon">🦟</span><div class="var-info"><span class="var-name">Mosquitoes</span><span class="var-val">70</span></div></div>
+        <div class="var-card"><span class="var-icon">🦠</span><div class="var-info"><span class="var-name">Malaria</span><span class="var-val">50</span></div></div>
+        <div class="var-card"><span class="var-icon">🐀</span><div class="var-info"><span class="var-name">Rats</span><span class="var-val">20</span></div></div>
+        <div class="var-card"><span class="var-icon">☣️</span><div class="var-info"><span class="var-name">Plague</span><span class="var-val">10</span></div></div>
+        <div class="var-card"><span class="var-icon">🐱</span><div class="var-info"><span class="var-name">Cats</span><span class="var-val">60</span></div></div>
+        <div class="var-card"><span class="var-icon">💧</span><div class="var-info"><span class="var-name">DDT Level</span><span class="var-val">0</span></div></div>
+        <div class="var-card"><span class="var-icon">🏚️</span><div class="var-info"><span class="var-name">Roof Integrity</span><span class="var-val">80</span></div></div>
+        <div class="var-card"><span class="var-icon">🌾</span><div class="var-info"><span class="var-name">Grain Stores</span><span class="var-val">85</span></div></div>
+        <div class="var-card"><span class="var-icon">🤝</span><div class="var-info"><span class="var-name">Public Trust</span><span class="var-val">70</span></div></div>
+        <div class="var-card"><span class="var-icon">💰</span><div class="var-info"><span class="var-name">Budget</span><span class="var-val">10</span></div></div>
+        <div class="var-card"><span class="var-icon">❤️</span><div class="var-info"><span class="var-name">Village Health</span><span class="var-val">100</span></div></div>
+      </div>
+
+      <p style="margin-top:16px"><strong>Hidden Variables</strong> — tracked by the system, effects visible only through indirect consequences:</p>
+      <div class="var-grid">
+        <div class="var-card var-hidden"><span class="var-icon">🐝</span><div class="var-info"><span class="var-name">Wasps</span><span class="var-val">concealed</span></div></div>
+        <div class="var-card var-hidden"><span class="var-icon">🐛</span><div class="var-info"><span class="var-name">Caterpillars</span><span class="var-val">concealed</span></div></div>
+        <div class="var-card var-hidden"><span class="var-icon">☠️</span><div class="var-info"><span class="var-name">Gecko Toxicity</span><span class="var-val">concealed</span></div></div>
+      </div>
+      <div class="callout callout-warn">
+        <div class="callout-title">⚠️ Hidden Variable Warning</div>
+        Hidden variables do not appear on your panel. Their effects manifest as unexplained changes in Roof Integrity, Cats, and Rats — often weeks after the triggering action. Watch for unexplained deterioration.
+      </div>
+    </div>
+
+    <hr class="page-break">
+
+    <!-- ─── SECTION 3 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">Section 03</span>
+        <span class="section-title">Turn Structure</span>
+      </div>
+      <p>Each player follows the same six-step sequence each turn. Complete all steps before passing to the next player.</p>
+      <div class="steps">
+        <div class="step"><span class="step-num">1</span><div class="step-body"><strong>Receive Budget:</strong> Gain +3 Budget. If you invested in infrastructure last turn, gain a bonus +3 additional Budget.</div></div>
+        <div class="step"><span class="step-num">2</span><div class="step-body"><strong>Auto Draw:</strong> If you hold fewer than 6 cards, draw one card. Players with a full hand (6 cards) cannot draw.</div></div>
+        <div class="step"><span class="step-num">3</span><div class="step-body"><strong>Choose One Action:</strong> Either draw one additional card, or gain +10 Budget (but not both).</div></div>
+        <div class="step"><span class="step-num">4</span><div class="step-body"><strong>Play Cards:</strong> Play any number of cards from your hand, paying their Budget cost. Effects resolve in order played.</div></div>
+        <div class="step"><span class="step-num">5</span><div class="step-body"><strong>Confirm &amp; Update:</strong> Announce your final actions. The system applies all updates simultaneously — including delayed effects from prior turns.</div></div>
+        <div class="step"><span class="step-num">6</span><div class="step-body"><strong>Global Event:</strong> After the last player each round, draw from the Global Events deck. Brace for impact — but there is a chance the draw yields no event that round. Effects, when triggered, apply to all villages.</div></div>
+      </div>
+      <div class="callout callout-tip">
+        <div class="callout-title">💡 Operative's Tip</div>
+        Budget does not carry over between turns in excess of 20. Plan your spending — hoarding is as dangerous as recklessness.
+      </div>
+    </div>
+
+    <!-- ─── SECTION 4 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">Section 04</span>
+        <span class="section-title">The Cards</span>
+      </div>
+      <p>The card deck uses <strong>weighted infinite draw</strong> — probabilities remain stable throughout the game. No card is ever permanently unavailable. Cards are classified as <strong>Upstream</strong> (preventive, addressing root causes), <strong>Downstream</strong> (reactive, treating symptoms), or <strong>Neutral</strong>.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Card</th>
+              <th>Cost</th>
+              <th>Type</th>
+              <th>Effects</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>💧 Spray DDT</td>
+              <td><span class="cost-tag">12</span></td>
+              <td><span class="cost-tag tag-upstream">Upstream</span></td>
+              <td>Mosquitoes −18, DDT +20, Trust +2. Delayed ecological damage via hidden variables.</td>
+            </tr>
+            <tr>
+              <td>🐱 Cat Drop</td>
+              <td><span class="cost-tag">15</span></td>
+              <td><span class="cost-tag tag-upstream">Upstream</span></td>
+              <td>Next turn: Cats +18 (or +9 if DDT is elevated). Rats −10.</td>
+            </tr>
+            <tr>
+              <td>📢 Awareness Campaign</td>
+              <td><span class="cost-tag">10</span></td>
+              <td><span class="cost-tag tag-upstream">Upstream</span></td>
+              <td>Immediate: Malaria −3, Plague −3. Next turn: Mosquitoes −4, Rats −4.</td>
+            </tr>
+            <tr>
+              <td>🏚️ Repair Thatch</td>
+              <td><span class="cost-tag">8</span></td>
+              <td><span class="cost-tag tag-downstream">Downstream</span></td>
+              <td>Roof Integrity +10.</td>
+            </tr>
+            <tr>
+              <td>🌾 Protect Grain</td>
+              <td><span class="cost-tag">6</span></td>
+              <td><span class="cost-tag tag-downstream">Downstream</span></td>
+              <td>Grain Stores +12.</td>
+            </tr>
+            <tr>
+              <td>🏥 Medical Aid</td>
+              <td><span class="cost-tag">5</span></td>
+              <td><span class="cost-tag tag-downstream">Downstream</span></td>
+              <td>Malaria −6, Plague −6.</td>
+            </tr>
+            <tr>
+              <td>💰 Bonus Funding</td>
+              <td><span class="cost-tag">0</span></td>
+              <td><span class="cost-tag tag-neutral">Neutral</span></td>
+              <td>Budget +15.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-warn">
+        <div class="callout-title">⚠️ DDT Overuse Penalty</div>
+        Playing <strong>Spray DDT</strong> three or more consecutive turns triggers a DDT scandal event: Public Trust −8. DDT use is tracked per player. This penalty applies even if trust is already low.
+      </div>
+    </div>
+
+    <hr class="page-break">
+
+    <!-- ─── SECTION 5 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">Section 05</span>
+        <span class="section-title">Damage Model</span>
+      </div>
+      <p>Each turn, the system automatically calculates deaths and applies them to Village Health. Multiple damage sources can stack.</p>
+
+      <div class="formula">Malaria deaths  =  floor( Malaria ÷ 15 )</div>
+      <div class="formula">Plague deaths   =  floor( Plague  ÷ 12 )</div>
+
+      <p style="margin-top:12px">Additional damage triggers:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Condition</th><th>Trigger Threshold</th><th>Effect</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>🌾 Starvation</td><td>Grain Stores below 50</td><td>Village Health −(3 per turn below threshold)</td></tr>
+            <tr><td>🏚️ Exposure</td><td>Roof Integrity below 50</td><td>Village Health −(2 per turn below threshold)</td></tr>
+            <tr><td>☣️ Plague Outbreak</td><td>Plague above 70</td><td>Double death multiplier that turn</td></tr>
+            <tr><td>🤝 Trust Collapse</td><td>Trust below 25</td><td>All card effects reduced to 50% effectiveness</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Village Health cannot exceed 100 and cannot drop below 0. At 0, the village has collapsed — no further recovery is possible, and the player is locked in deficit scoring.</p>
+    </div>
+
+    <!-- ─── SECTION 6 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">Section 06</span>
+        <span class="section-title">Trust System</span>
+      </div>
+      <p>Public Trust represents the community's confidence in your interventions. It degrades passively and responds to outcomes.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Event</th><th>Trust Change</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Passive decay each turn</td><td>−1</td></tr>
+            <tr><td>Deaths this turn above baseline (3+)</td><td>−2 per excess death</td></tr>
+            <tr><td>Zero deaths this turn</td><td>+2</td></tr>
+            <tr><td>DDT consecutive overuse (3 turns)</td><td>−8</td></tr>
+            <tr><td>Awareness Campaign (next turn)</td><td>Slows decay by 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout-warn">
+        <div class="callout-title">⚠️ Critical Threshold: Trust Below 25</div>
+        When Public Trust drops below 25, all card effects are reduced to 50% of their stated values. Rebuilding trust from collapse is extremely difficult — prevention is essential.
+      </div>
+    </div>
+
+    <hr class="page-break">
+
+    <!-- ─── SECTION 7 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">Section 07</span>
+        <span class="section-title">The Ecological Chain</span>
+      </div>
+      <p>The hidden ecological system is the core mechanic of this simulation. DDT triggers a cascade of delayed consequences across two separate pathways — both converging on village degradation.</p>
+
+      <p style="margin-bottom:8px"><strong>Pathway A — Roof Collapse:</strong></p>
+      <div class="chain">
+        <span class="chain-node bad">💧 DDT Applied</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-node warn">🐝 Wasps Die</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-node warn">🐛 Caterpillars ↑</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-node bad">🏚️ Roof Damage</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-node bad">❤️ Exposure Deaths</span>
+      </div>
+
+      <p style="margin: 16px 0 8px"><strong>Pathway B — Rat Plague:</strong></p>
+      <div class="chain">
+        <span class="chain-node bad">💧 DDT Applied</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-node warn">☠️ Gecko Toxicity ↑</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-node warn">🐱 Cats Die</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-node bad">🐀 Rats ↑</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-node bad">☣️ Plague ↑</span>
+      </div>
+
+      <div class="callout callout-rule" style="margin-top:18px">
+        <div class="callout-title">📋 The Archetype</div>
+        This is the <em>Fixes That Fail</em> systems archetype: a well-intentioned intervention (DDT) reduces the presenting problem (malaria) but produces side effects (ecological collapse) that eventually worsen the original condition — or create new, harder ones. Delays between cause and effect make the connection invisible until damage is irreversible.
+      </div>
+    </div>
+
+    <!-- ─── SECTION 8 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">Section 08</span>
+        <span class="section-title">Global Events</span>
+      </div>
+      <p>At the end of each round, one Global Event card is drawn and applies to all players. Events introduce systemic shocks beyond any player's control — forcing adaptation rather than pure optimisation.</p>
+      <div class="event-grid">
+        <div class="event-card"><span class="event-name">🌧️ Monsoon Season</span><span class="event-effect">All players: Mosquitoes +12, Roof Integrity −5.</span></div>
+        <div class="event-card"><span class="event-name">🐀 Rodent Migration</span><span class="event-effect">All players: Rats +10.</span></div>
+        <div class="event-card"><span class="event-name">📰 DDT Scandal</span><span class="event-effect">All players with DDT > 20: Trust −6.</span></div>
+        <div class="event-card"><span class="event-name">🌿 Forest Clear-up</span><span class="event-effect">All players: Mosquitoes −8, Caterpillars −5 (hidden).</span></div>
+        <div class="event-card"><span class="event-name">💉 WHO Funding</span><span class="event-effect">All players: Budget +10. Guaranteed once in turns 5–8.</span></div>
+        <div class="event-card"><span class="event-name">☀️ Dry Season</span><span class="event-effect">All players: Grain Stores −8, Mosquitoes −6.</span></div>
+        <div class="event-card"><span class="event-name">🐱 Stray Colony</span><span class="event-effect">All players: Cats +6, Rats −4.</span></div>
+        <div class="event-card"><span class="event-name">🏛️ Colonial Audit</span><span class="event-effect">Player with lowest Trust: Trust −4 additional.</span></div>
+      </div>
+      <div class="callout callout-tip">
+        <div class="callout-title">💡 WHO Funding Guarantee</div>
+        One WHO Funding event is guaranteed to appear between turns 5 and 8. This is designed to give all players a mid-game recovery window. Budget accordingly — do not exhaust resources assuming this will save you early.
+      </div>
+    </div>
+
+    <hr class="page-break">
+
+    <!-- ─── SECTION 9 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">Section 09</span>
+        <span class="section-title">Scoring</span>
+      </div>
+      <p>Final scores are calculated after Turn 12. All players' Field Status Panels are revealed simultaneously. Scores range from <strong>0 to 100</strong>.</p>
+      <div class="score-grid">
+        <div class="score-col penalties">
+          <h4>⬇ Penalties</h4>
+          <ul>
+            <li>Total deaths (all causes)</li>
+            <li>Peak infection level reached</li>
+            <li>Outbreak duration (turns &gt; 60)</li>
+            <li>Ecological collapse (Cats or Wasps at 0)</li>
+            <li>Roof Integrity below 30 at game end</li>
+            <li>Grain Stores below 30 at game end</li>
+          </ul>
+        </div>
+        <div class="score-col bonuses">
+          <h4>⬆ Bonuses</h4>
+          <ul>
+            <li>Final Public Trust level</li>
+            <li>Remaining Budget at game end</li>
+            <li>Village Health above 70 at game end</li>
+            <li>No DDT overuse penalty triggered</li>
+            <li>Roof &amp; Grain both above 70</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout callout-tip">
+        <div class="callout-title">💡 Tiebreaker</div>
+        In case of tied scores, the player with higher final Village Health wins. If still tied, higher final Public Trust wins.
+      </div>
+    </div>
+
+    <!-- ─── SECTION 10 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">Section 10</span>
+        <span class="section-title">Strategy Field Notes</span>
+      </div>
+
+      <div class="callout callout-tip">
+        <div class="callout-title">💡 Field Operative's Strategy Guide</div>
+        <p style="font-size:12.5px; margin-bottom:8px"><strong>Early Game (Turns 1–4):</strong> Prioritise upstream interventions. Awareness Campaigns and Cat Drops reduce disease at its source without triggering ecological cascades. Use DDT sparingly — once at most — and only when Malaria exceeds 70. Begin building Budget reserves.</p>
+        <p style="font-size:12.5px; margin-bottom:8px"><strong>Mid Game (Turns 5–8):</strong> Stabilise infrastructure. If Roof Integrity approaches 60, play Repair Thatch before the cascade accelerates. Protect Grain proactively — starvation is silent until it isn't. Use WHO Funding wisely.</p>
+        <p style="font-size:12.5px; margin-bottom:0"><strong>Late Game (Turns 9–12):</strong> Shift to downstream recovery. Medical Aid becomes critical. Prioritise Trust above 40 to preserve card effectiveness. Accept that some damage is already locked in — maximise final snapshot scores.</p>
+      </div>
+
+      <p style="margin-top:14px"><strong>Common Mistakes to Avoid:</strong></p>
+      <ul>
+        <li><strong>DDT dependency:</strong> The short-term gains mask 3–4 turns of delayed ecological damage. By the time roof collapse appears, the cause is already 6 turns past.</li>
+        <li><strong>Neglecting rats:</strong> Rats grow exponentially. A value of 30 becomes 60 within two turns without feline control.</li>
+        <li><strong>Ignoring Trust:</strong> A Trust collapse below 25 halves all interventions. Recovery requires multiple turns of zero-death performance — nearly impossible once plague spirals.</li>
+        <li><strong>Hoarding budget:</strong> Budget above 20 is wasted. Spend proactively, especially before global events.</li>
+      </ul>
+    </div>
+
+
+  </div><!-- /content -->
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <footer>
+    <span class="footer-left">UTC2703 · Systems Thinking · NUS</span>
+    <span class="footer-center">Fixes That Fail: The Borneo Simulation — Field Rulebook</span>
+    <span class="footer-right">v1.0 · 2026 Edition</span>
+  </footer>
+
+</div><!-- /document -->
+
+<!-- ─── TWEAKS PANEL ─── -->
+<div id="tweaks-panel">
+  <h3>⚙ Tweaks</h3>
+  <div class="tweak-row">
+    <label>Accent Colour</label>
+    <input type="color" id="tw-accent" value="#2a4a35">
+  </div>
+  <div class="tweak-row">
+    <label>Paper Tone</label>
+    <select id="tw-paper">
+      <option value="#f0e4c2">Aged Parchment (default)</option>
+      <option value="#f5f0e8">Pale Ivory</option>
+      <option value="#e8dfc8">Deep Vellum</option>
+      <option value="#ffffff">Clean White</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <label>Body Font</label>
+    <select id="tw-font">
+      <option value="'Special Elite', 'Courier New', monospace">Typewriter (default)</option>
+      <option value="'Libre Baskerville', Georgia, serif">Serif Classic</option>
+      <option value="'Courier New', monospace">Courier Mono</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <label>Text Size</label>
+    <input type="range" id="tw-size" min="11" max="16" step=".5" value="13.5">
+  </div>
+</div>
+
+<script>
+// ── Tweaks wiring ──────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#7b5151",
+  "paper": "#f5f0e8",
+  "font": "'Libre Baskerville', Georgia, serif",
+  "size": 13.5
+}/*EDITMODE-END*/;
+
+const root = document.documentElement;
+function applyTweaks(t) {
+  root.style.setProperty('--green', t.accent);
+  root.style.setProperty('--paper', t.paper);
+  root.style.setProperty('--font-body', t.font);
+  document.querySelectorAll('p,li,.step-body,.meta-value,.event-effect,.formula,.callout').forEach(el => {
+    el.style.fontSize = '';
+  });
+  document.querySelectorAll('p').forEach(el => el.style.fontSize = t.size + 'px');
+  document.getElementById('tw-accent').value = t.accent;
+  document.getElementById('tw-paper').value = t.paper;
+  document.getElementById('tw-font').value = t.font;
+  document.getElementById('tw-size').value = t.size;
+}
+applyTweaks(TWEAK_DEFAULTS);
+
+document.getElementById('tw-accent').addEventListener('input', e => {
+  TWEAK_DEFAULTS.accent = e.target.value;
+  applyTweaks(TWEAK_DEFAULTS);
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits: TWEAK_DEFAULTS}, '*');
+});
+document.getElementById('tw-paper').addEventListener('change', e => {
+  TWEAK_DEFAULTS.paper = e.target.value;
+  applyTweaks(TWEAK_DEFAULTS);
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits: TWEAK_DEFAULTS}, '*');
+});
+document.getElementById('tw-font').addEventListener('change', e => {
+  TWEAK_DEFAULTS.font = e.target.value;
+  applyTweaks(TWEAK_DEFAULTS);
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits: TWEAK_DEFAULTS}, '*');
+});
+document.getElementById('tw-size').addEventListener('input', e => {
+  TWEAK_DEFAULTS.size = parseFloat(e.target.value);
+  applyTweaks(TWEAK_DEFAULTS);
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits: TWEAK_DEFAULTS}, '*');
+});
+
+// ── Tweaks toggle ──────────────────────────────────────────
+window.addEventListener('message', e => {
+  if (e.data?.type === '__activate_edit_mode')   document.getElementById('tweaks-panel').style.display = 'block';
+  if (e.data?.type === '__deactivate_edit_mode')  document.getElementById('tweaks-panel').style.display = 'none';
+});
+window.parent.postMessage({type: '__edit_mode_available'}, '*');
+</script>
+</body>
+</html>
